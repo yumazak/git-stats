@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-02-09
+
+### Added
+
+- Documentation website built with rspress
+- Criterion benchmark for git2 stats collection
+- Single mode now supports all 5 chart types (Commits, Additions, Deletions, Net Lines, Files Changed)
+- Weekday and hourly activity charts in TUI
+
+### Changed
+
+- Added docs build CI workflow
+- Automatic CHANGELOG sync to documentation site
+
 ## [0.4.0] - 2026-02-08
 
 ### Added
@@ -63,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default output format to TUI mode
 - Removed x86_64-apple-darwin target from release workflow
 
-[Unreleased]: https://github.com/yumazak/kodo/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/yumazak/kodo/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/yumazak/kodo/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/yumazak/kodo/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/yumazak/kodo/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/yumazak/kodo/compare/v0.1.1...v0.2.0

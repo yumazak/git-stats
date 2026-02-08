@@ -1,62 +1,85 @@
 # 変更履歴
 
-このプロジェクトの重要な変更をこのファイルに記録します。
+All notable changes to this project will be documented in this file.
 
-フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
-[Semantic Versioning](https://semver.org/lang/ja/) に従っています。
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.5.0] - 2026-02-09
+
+### Added
+
+- Documentation website built with rspress
+- Criterion benchmark for git2 stats collection
+- Single mode now supports all 5 chart types (Commits, Additions, Deletions, Net Lines, Files Changed)
+- Weekday and hourly activity charts in TUI
+
+### Changed
+
+- Added docs build CI workflow
+- Automatic CHANGELOG sync to documentation site
 
 ## [0.4.0] - 2026-02-08
 
-### 追加
+### Added
 
-- 登録されたリポジトリを表示する `kodo list` サブコマンド
-- データ収集中のローディングスピナー
-- 追加/削除用の Diverging Bar Chart（別々のチャートを置き換え）
-- Add/Del チャートの縦スクロールサポート
+- `kodo list` subcommand to display registered repositories
+- Loading spinner during data collection
+- Diverging bar chart for Additions/Deletions (replacing separate charts)
+- Vertical scroll support for Add/Del diverging bar chart
 
-### 変更
+### Changed
 
-- 自動リリース用の kodo-release skill を追加
-- リリースワークフローのドキュメントを追加
+- Added kodo-release skill for automated releases
+- Added release workflow documentation
 
 ## [0.3.0] - 2026-02-08
 
-### 追加
+### Added
 
-- リポジトリを設定に登録する `kodo add` サブコマンド
-- リポジトリを設定から解除する `kodo remove` サブコマンド
+- `kodo add` subcommand to register repositories to config
+- `kodo remove` subcommand to unregister repositories from config
 
-### 変更
+### Changed
 
-- コードの安全性を改善し、clippy の allow をドキュメント化
-- 未使用のスクロール機能を削除
-- README に mise インストール方法を追加
+- Improved code safety and documented clippy allows
+- Removed unused scroll functionality
+- Added mise installation method to README
 
 ## [0.2.0] - 2026-02-08
 
-### 変更
+### Changed
 
-- **破壊的変更:** クレート名を `gstat` から `kodo` に変更
-- リネーム後のリポジトリ URL を更新
+- **BREAKING:** Renamed crate from `gstat` to `kodo`
+- Updated repository URLs after rename
 
 ## [0.1.1] - 2026-02-08
 
-### 追加
+### Added
 
-- ratatui を使用した TUI 可視化による初期リリース
-- Git 統計分析（コミット、追加、削除、ネット行数、変更ファイル）
-- JSON および CSV 出力形式
-- 設定ファイルによる複数リポジトリサポート
-- 日別、週別、月別、年別の集計期間
-- スプリットビュー（デフォルト）とシングルメトリックビューモード
-- mise 経由の prek pre-commit フック
-- 設定検証用の JSON Schema
+- Initial release with TUI visualization using ratatui
+- Git statistics analysis (commits, additions, deletions, net lines, files changed)
+- JSON and CSV output formats
+- Multi-repository support with config file
+- Daily, weekly, monthly, and yearly aggregation periods
+- Split view (default) and single metric view modes
+- prek pre-commit hooks via mise
+- JSON Schema for config validation
 
-### 修正
+### Fixed
 
-- Rust 1.93 の clippy 警告
+- Clippy warnings for Rust 1.93
 
-### 変更
+### Changed
 
-- デフォルト出力形式を TUI モードに変更
-- リリースワークフローから x86_64-apple-darwin ターゲットを削除
+- Default output format to TUI mode
+- Removed x86_64-apple-darwin target from release workflow
+
+[Unreleased]: https://github.com/yumazak/kodo/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/yumazak/kodo/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/yumazak/kodo/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/yumazak/kodo/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/yumazak/kodo/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/yumazak/kodo/releases/tag/v0.1.1
