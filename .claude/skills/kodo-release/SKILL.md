@@ -105,10 +105,29 @@ version = "X.Y.Z"  # ← ここを更新
 [X.Y.Z]: https://github.com/yumazak/kodo/compare/vPREV...vX.Y.Z
 ```
 
+### Step 4.5: ドキュメントサイトの CHANGELOG 同期
+
+CHANGELOG.md を website のドキュメントにも反映する:
+
+```bash
+# 英語版（ヘッダーを除いてコピー）
+echo "# Changelog" > website/docs/en/changelog.md
+echo "" >> website/docs/en/changelog.md
+tail -n +3 CHANGELOG.md >> website/docs/en/changelog.md
+
+# 日本語版（日本語ヘッダーで）
+echo "# 変更履歴" > website/docs/ja/changelog.md
+echo "" >> website/docs/ja/changelog.md
+tail -n +3 CHANGELOG.md >> website/docs/ja/changelog.md
+```
+
+**注意**: 日本語版は英語のままになるが、CHANGELOG は技術的な内容なので許容する。
+必要に応じて手動で翻訳を追加可能。
+
 ### Step 5: コミット & プッシュ
 
 ```bash
-git add Cargo.toml Cargo.lock CHANGELOG.md
+git add Cargo.toml Cargo.lock CHANGELOG.md website/docs/en/changelog.md website/docs/ja/changelog.md
 git commit -m "chore: Bump version to ${NEW_VERSION}"
 git push -u origin release/v${NEW_VERSION}
 ```
