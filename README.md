@@ -41,6 +41,31 @@ Download the appropriate binary for your platform from the [Releases](https://gi
 cargo install --path .
 ```
 
+## Updating
+
+### mise
+
+```bash
+mise upgrade kodo
+```
+
+### crates.io
+
+```bash
+cargo install kodo
+```
+
+### From Releases
+
+Download the latest binary from the [Releases](https://github.com/yumazak/kodo/releases) page and replace the existing one.
+
+### From Source
+
+```bash
+git pull
+cargo install --path .
+```
+
 ## Usage
 
 ```bash

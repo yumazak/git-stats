@@ -41,6 +41,31 @@ cargo install kodo
 cargo install --path .
 ```
 
+## アップデート
+
+### mise
+
+```bash
+mise upgrade kodo
+```
+
+### crates.io
+
+```bash
+cargo install kodo
+```
+
+### リリースから
+
+[Releases](https://github.com/yumazak/kodo/releases) ページから最新バイナリをダウンロードし、既存のものと置き換えてください。
+
+### ソースから
+
+```bash
+git pull
+cargo install --path .
+```
+
 ## 使い方
 
 ```bash
