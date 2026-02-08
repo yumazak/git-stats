@@ -61,14 +61,63 @@ impl Metric {
     }
 }
 
+/// Chart type to display in single mode
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum ChartType {
+    #[default]
+    Commits,
+    FilesChanged,
+    AddDel,
+    Weekday,
+    Hour,
+}
+
+impl ChartType {
+    /// Get the next chart type in the cycle
+    #[must_use]
+    pub fn next(self) -> Self {
+        match self {
+            Self::Commits => Self::FilesChanged,
+            Self::FilesChanged => Self::AddDel,
+            Self::AddDel => Self::Weekday,
+            Self::Weekday => Self::Hour,
+            Self::Hour => Self::Commits,
+        }
+    }
+
+    /// Get the previous chart type in the cycle
+    #[must_use]
+    pub fn prev(self) -> Self {
+        match self {
+            Self::Commits => Self::Hour,
+            Self::FilesChanged => Self::Commits,
+            Self::AddDel => Self::FilesChanged,
+            Self::Weekday => Self::AddDel,
+            Self::Hour => Self::Weekday,
+        }
+    }
+
+    /// Get display name
+    #[must_use]
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Commits => "Commits",
+            Self::FilesChanged => "Files Changed",
+            Self::AddDel => "Add/Del",
+            Self::Weekday => "Weekday",
+            Self::Hour => "Hour",
+        }
+    }
+}
+
 /// Application state
 pub struct App {
     /// Analysis result to display
     pub result: AnalysisResult,
     /// Activity statistics (commits by weekday and hour)
     pub activity_stats: ActivityStats,
-    /// Currently selected metric
-    pub metric: Metric,
+    /// Currently selected chart type (for single mode)
+    pub chart_type: ChartType,
     /// Whether the app should quit
     pub should_quit: bool,
     /// Show single metric instead of all metrics
@@ -84,7 +133,7 @@ impl App {
         Self {
             result,
             activity_stats,
-            metric: Metric::default(),
+            chart_type: ChartType::default(),
             should_quit: false,
             single_metric,
             scroll_offset: 0,
@@ -147,27 +196,27 @@ impl App {
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.should_quit = true;
             }
-            // Next metric (only in single metric mode)
+            // Next chart (only in single metric mode)
             KeyCode::Tab | KeyCode::Right | KeyCode::Char('l') => {
                 if self.single_metric {
-                    self.metric = self.metric.next();
+                    self.chart_type = self.chart_type.next();
                 }
             }
-            // Previous metric (only in single metric mode)
+            // Previous chart (only in single metric mode)
             KeyCode::BackTab | KeyCode::Left | KeyCode::Char('h') => {
                 if self.single_metric {
-                    self.metric = self.metric.prev();
+                    self.chart_type = self.chart_type.prev();
                 }
             }
-            // Scroll up (past data) - only in split view
+            // Scroll up (past data)
             KeyCode::Up | KeyCode::Char('k') => {
-                if !self.single_metric {
+                if self.can_scroll() {
                     self.scroll_up();
                 }
             }
-            // Scroll down (towards latest) - only in split view
+            // Scroll down (towards latest)
             KeyCode::Down | KeyCode::Char('j') => {
-                if !self.single_metric {
+                if self.can_scroll() {
                     self.scroll_down();
                 }
             }
@@ -178,6 +227,17 @@ impl App {
                 self.scroll_offset = 0;
             }
             _ => {}
+        }
+    }
+
+    /// Check if current view supports scrolling
+    fn can_scroll(&self) -> bool {
+        if self.single_metric {
+            // Only AddDel chart supports scrolling in single mode
+            matches!(self.chart_type, ChartType::AddDel)
+        } else {
+            // Split view supports scrolling
+            true
         }
     }
 
@@ -194,12 +254,6 @@ impl App {
     /// Scroll down to see newer data
     fn scroll_down(&mut self) {
         self.scroll_offset = self.scroll_offset.saturating_sub(1);
-    }
-
-    /// Get values for the current metric
-    #[must_use]
-    pub fn metric_values(&self) -> Vec<(String, i64)> {
-        self.values_for_metric(self.metric)
     }
 
     /// Get values for a specific metric
@@ -274,16 +328,6 @@ mod tests {
         let metric = Metric::Commits;
         assert_eq!(metric.next(), Metric::AdditionsAndDeletions);
         assert_eq!(metric.prev(), Metric::FilesChanged);
-    }
-
-    #[test]
-    fn test_metric_values() {
-        let result = make_result();
-        let app = App::new(result, ActivityStats::default(), false);
-
-        let values = app.metric_values();
-        assert_eq!(values.len(), 1);
-        assert_eq!(values[0], ("2024-01-01".to_string(), 5));
     }
 
     #[test]
@@ -384,5 +428,78 @@ mod tests {
         app.scroll_offset = 0; // This happens in handle_key
 
         assert_eq!(app.scroll_offset, 0);
+    }
+
+    #[test]
+    fn test_chart_type_cycle() {
+        let chart = ChartType::Commits;
+        assert_eq!(chart.next(), ChartType::FilesChanged);
+        assert_eq!(chart.next().next(), ChartType::AddDel);
+        assert_eq!(chart.next().next().next(), ChartType::Weekday);
+        assert_eq!(chart.next().next().next().next(), ChartType::Hour);
+        assert_eq!(chart.next().next().next().next().next(), ChartType::Commits);
+    }
+
+    #[test]
+    fn test_chart_type_prev_cycle() {
+        let chart = ChartType::Commits;
+        assert_eq!(chart.prev(), ChartType::Hour);
+        assert_eq!(chart.prev().prev(), ChartType::Weekday);
+        assert_eq!(chart.prev().prev().prev(), ChartType::AddDel);
+        assert_eq!(chart.prev().prev().prev().prev(), ChartType::FilesChanged);
+        assert_eq!(chart.prev().prev().prev().prev().prev(), ChartType::Commits);
+    }
+
+    #[test]
+    fn test_chart_type_name() {
+        assert_eq!(ChartType::Commits.name(), "Commits");
+        assert_eq!(ChartType::FilesChanged.name(), "Files Changed");
+        assert_eq!(ChartType::AddDel.name(), "Add/Del");
+        assert_eq!(ChartType::Weekday.name(), "Weekday");
+        assert_eq!(ChartType::Hour.name(), "Hour");
+    }
+
+    #[test]
+    fn test_can_scroll_in_split_mode() {
+        let result = make_result();
+        let app = App::new(result, ActivityStats::default(), false);
+
+        // Split mode always supports scrolling
+        assert!(app.can_scroll());
+    }
+
+    #[test]
+    fn test_can_scroll_in_single_mode() {
+        let result = make_result();
+        let mut app = App::new(result, ActivityStats::default(), true);
+
+        // Only AddDel chart supports scrolling in single mode
+        app.chart_type = ChartType::AddDel;
+        assert!(app.can_scroll());
+
+        app.chart_type = ChartType::Commits;
+        assert!(!app.can_scroll());
+
+        app.chart_type = ChartType::FilesChanged;
+        assert!(!app.can_scroll());
+
+        app.chart_type = ChartType::Weekday;
+        assert!(!app.can_scroll());
+
+        app.chart_type = ChartType::Hour;
+        assert!(!app.can_scroll());
+    }
+
+    #[test]
+    fn test_chart_type_default() {
+        assert_eq!(ChartType::default(), ChartType::Commits);
+    }
+
+    #[test]
+    fn test_app_new_initializes_chart_type() {
+        let result = make_result();
+        let app = App::new(result, ActivityStats::default(), false);
+
+        assert_eq!(app.chart_type, ChartType::default());
     }
 }

@@ -5,4 +5,4 @@ pub mod event;
 pub mod ui;
 pub mod widgets;
 
-pub use app::{App, Metric};
+pub use app::{App, ChartType, Metric};
