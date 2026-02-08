@@ -6,11 +6,6 @@ use crate::tui::app::{App, Metric};
 use ratatui::prelude::*;
 use ratatui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph};
 
-/// Render a line chart for current metric
-pub fn render_line_chart(frame: &mut Frame, area: Rect, app: &App) {
-    render_line_chart_for_metric(frame, area, app, app.metric);
-}
-
 /// Render a line chart for a specific metric
 pub fn render_line_chart_for_metric(frame: &mut Frame, area: Rect, app: &App, metric: Metric) {
     let values = app.values_for_metric(metric);

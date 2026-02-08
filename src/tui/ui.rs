@@ -1,10 +1,9 @@
 //! UI rendering
 
 use crate::stats::ActivityStats;
-use crate::tui::app::{App, Metric};
+use crate::tui::app::{App, ChartType, Metric};
 use crate::tui::widgets::{
-    render_diverging_bar_chart, render_line_chart, render_line_chart_for_metric,
-    render_vertical_bar_chart,
+    render_diverging_bar_chart, render_line_chart_for_metric, render_vertical_bar_chart,
 };
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
@@ -55,7 +54,15 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
 }
 
 fn render_single_chart(frame: &mut Frame, area: Rect, app: &App) {
-    render_line_chart(frame, area, app);
+    match app.chart_type {
+        ChartType::Commits => render_line_chart_for_metric(frame, area, app, Metric::Commits),
+        ChartType::FilesChanged => {
+            render_line_chart_for_metric(frame, area, app, Metric::FilesChanged);
+        }
+        ChartType::AddDel => render_diverging_bar_chart(frame, area, app),
+        ChartType::Weekday => render_weekday_chart(frame, area, &app.activity_stats),
+        ChartType::Hour => render_hourly_chart(frame, area, &app.activity_stats),
+    }
 }
 
 fn render_split_charts(frame: &mut Frame, area: Rect, app: &App) {
@@ -135,9 +142,18 @@ fn hour_label(hour: usize) -> &'static str {
 }
 
 fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
-    let mode_indicator = if app.single_metric { "Single" } else { "Split" };
+    let mode_indicator = if app.single_metric {
+        format!("Single: {}", app.chart_type.name())
+    } else {
+        "Split".to_string()
+    };
 
-    let help_text = format!(" [m] Mode: {mode_indicator} | [q] Quit ");
+    let nav_hint = if app.single_metric {
+        "[Tab] Switch | "
+    } else {
+        ""
+    };
+    let help_text = format!(" {nav_hint}[m] Mode: {mode_indicator} | [q] Quit ");
 
     // Summary stats
     let total = &app.result.total;
