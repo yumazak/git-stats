@@ -3,6 +3,7 @@
 use crate::error::Result;
 use crate::output::Formatter;
 use crate::stats::AnalysisResult;
+use std::fmt::Write;
 
 /// CSV output formatter
 pub struct CsvFormatter {
@@ -45,18 +46,25 @@ impl Formatter for CsvFormatter {
 
         // Add data rows
         for stat in &result.stats {
-            output.push_str(&format!(
-                "{},{},{},{},{},{}\n",
-                stat.date, stat.commits, stat.additions, stat.deletions, stat.net_lines, stat.files_changed
-            ));
+            let _ = writeln!(
+                output,
+                "{},{},{},{},{},{}",
+                stat.date,
+                stat.commits,
+                stat.additions,
+                stat.deletions,
+                stat.net_lines,
+                stat.files_changed
+            );
         }
 
         // Add total row
         let total = &result.total;
-        output.push_str(&format!(
-            "TOTAL,{},{},{},{},{}\n",
+        let _ = writeln!(
+            output,
+            "TOTAL,{},{},{},{},{}",
             total.commits, total.additions, total.deletions, total.net_lines, total.files_changed
-        ));
+        );
 
         Ok(output)
     }

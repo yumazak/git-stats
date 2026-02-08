@@ -139,6 +139,9 @@ mod tests {
     #[test]
     fn test_args_with_extensions() {
         let args = Args::parse_from(["git-stats", "--ext", "rs,ts,js"]);
-        assert_eq!(args.ext, Some(vec!["rs".to_string(), "ts".to_string(), "js".to_string()]));
+        assert_eq!(
+            args.ext,
+            Some(vec!["rs".to_string(), "ts".to_string(), "js".to_string()])
+        );
     }
 }

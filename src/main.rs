@@ -1,7 +1,7 @@
 //! git-stats CLI entry point
 
 use clap::Parser;
-use git_stats::cli::{execute, Args};
+use git_stats::cli::{Args, execute};
 use std::error::Error;
 use std::process::ExitCode;
 

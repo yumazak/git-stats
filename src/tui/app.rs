@@ -1,12 +1,14 @@
 //! Application state management
 
+#![allow(clippy::cast_possible_wrap)]
+
 use crate::error::Result;
 use crate::stats::AnalysisResult;
 use crate::tui::event::{Event, EventHandler};
 use crate::tui::ui;
+use crossterm::ExecutableCommand;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
-use crossterm::ExecutableCommand;
 use ratatui::prelude::*;
 use std::io::stdout;
 
@@ -87,6 +89,10 @@ impl App {
     }
 
     /// Run the TUI application
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if terminal operations fail.
     pub fn run(&mut self) -> Result<()> {
         // Setup terminal
         terminal::enable_raw_mode()?;
@@ -121,8 +127,7 @@ impl App {
             // Handle events
             match event_handler.next()? {
                 Event::Key(key) => self.handle_key(key),
-                Event::Tick => {}
-                Event::Resize(_, _) => {}
+                Event::Tick | Event::Resize(_, _) => {}
             }
         }
 

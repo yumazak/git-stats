@@ -81,7 +81,10 @@ mod tests {
         }"#;
 
         let config: Config = serde_json::from_str(json).unwrap();
-        assert_eq!(config.schema, Some("https://example.com/schema.json".to_string()));
+        assert_eq!(
+            config.schema,
+            Some("https://example.com/schema.json".to_string())
+        );
         assert_eq!(config.repositories.len(), 1);
         assert_eq!(config.repositories[0].name, "test-repo");
         assert_eq!(config.defaults.days, 7);

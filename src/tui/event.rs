@@ -64,6 +64,10 @@ impl EventHandler {
     }
 
     /// Get the next event, blocking until one is available
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the event channel is disconnected.
     pub fn next(&self) -> Result<Event> {
         Ok(self.receiver.recv().unwrap_or(Event::Tick))
     }

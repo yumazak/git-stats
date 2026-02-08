@@ -89,10 +89,7 @@ fn render_split_charts(frame: &mut Frame, area: Rect, app: &App) {
 fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
     let mode_indicator = if app.single_metric { "Single" } else { "Split" };
 
-    let help_text = format!(
-        " [m] Mode: {} | [q] Quit ",
-        mode_indicator
-    );
+    let help_text = format!(" [m] Mode: {mode_indicator} | [q] Quit ");
 
     // Summary stats
     let total = &app.result.total;

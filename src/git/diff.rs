@@ -30,6 +30,7 @@ impl DiffStats {
 
     /// Calculate net line change (additions - deletions)
     #[must_use]
+    #[allow(clippy::cast_possible_wrap)]
     pub fn net_lines(&self) -> i64 {
         self.additions as i64 - self.deletions as i64
     }
@@ -77,7 +78,7 @@ impl FileChange {
         let path = std::path::Path::new(&self.path);
         path.extension()
             .and_then(|ext| ext.to_str())
-            .map_or(false, |ext| extensions.iter().any(|e| e == ext))
+            .is_some_and(|ext| extensions.iter().any(|e| e == ext))
     }
 }
 

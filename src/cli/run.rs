@@ -1,11 +1,11 @@
 //! CLI execution logic
 
 use crate::cli::args::{Args, OutputFormat};
-use crate::config::{default_config_path, expand_tilde, load_config, RepoConfig};
+use crate::config::{RepoConfig, default_config_path, expand_tilde, load_config};
 use crate::error::{Error, Result};
 use crate::git::{CommitInfo, Repository};
 use crate::output::{CsvFormatter, Formatter, JsonFormatter};
-use crate::stats::{collect_stats, DateRange, Days};
+use crate::stats::{DateRange, Days, collect_stats};
 use crate::tui::App;
 use std::path::PathBuf;
 
@@ -24,6 +24,7 @@ struct RepoInfo {
 /// - Configuration loading fails
 /// - Repository access fails
 /// - Output formatting fails
+#[allow(clippy::needless_pass_by_value)]
 pub fn execute(args: Args) -> Result<()> {
     // Get repositories to analyze
     let repos = get_repositories(&args)?;
@@ -83,9 +84,10 @@ fn get_repositories(args: &Args) -> Result<Vec<RepoInfo>> {
     // 1. --repo flag takes highest priority (single repo)
     if let Some(repo_path) = &args.repo {
         let expanded = expand_tilde(repo_path);
-        let name = expanded
-            .file_name()
-            .map_or_else(|| "repository".to_string(), |s| s.to_string_lossy().to_string());
+        let name = expanded.file_name().map_or_else(
+            || "repository".to_string(),
+            |s| s.to_string_lossy().to_string(),
+        );
         return Ok(vec![RepoInfo {
             path: expanded,
             name,
@@ -96,22 +98,23 @@ fn get_repositories(args: &Args) -> Result<Vec<RepoInfo>> {
     // 2. Try to load config file
     let config_path = args.config.clone().or_else(default_config_path);
 
-    if let Some(path) = config_path {
-        if path.exists() {
-            let config = load_config(&path)?;
-            let repos = filter_and_validate_repos(&config.repositories, args.repo_name.as_deref());
+    if let Some(path) = config_path
+        && path.exists()
+    {
+        let config = load_config(&path)?;
+        let repos = filter_and_validate_repos(&config.repositories, args.repo_name.as_deref());
 
-            if !repos.is_empty() {
-                return Ok(repos);
-            }
+        if !repos.is_empty() {
+            return Ok(repos);
         }
     }
 
     // 3. Fall back to current directory
     let current_dir = std::env::current_dir()?;
-    let name = current_dir
-        .file_name()
-        .map_or_else(|| "repository".to_string(), |s| s.to_string_lossy().to_string());
+    let name = current_dir.file_name().map_or_else(
+        || "repository".to_string(),
+        |s| s.to_string_lossy().to_string(),
+    );
 
     // Check if current directory is a git repo
     if !current_dir.join(".git").exists() {
@@ -131,10 +134,10 @@ fn filter_and_validate_repos(repos: &[RepoConfig], filter: Option<&[String]>) ->
         .iter()
         .filter(|repo| {
             // Filter by name if specified
-            if let Some(names) = filter {
-                if !names.iter().any(|n| n == &repo.name) {
-                    return false;
-                }
+            if let Some(names) = filter
+                && !names.iter().any(|n| n == &repo.name)
+            {
+                return false;
             }
 
             // Validate repository exists

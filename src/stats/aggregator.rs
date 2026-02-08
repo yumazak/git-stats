@@ -43,7 +43,7 @@ pub fn running_totals(stats: &[PeriodStats]) -> Vec<PeriodStats> {
 
         let mut period = running.clone();
         period.date = stat.date;
-        period.label = stat.label.clone();
+        period.label.clone_from(&stat.label);
         result.push(period);
     }
 

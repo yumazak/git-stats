@@ -1,5 +1,7 @@
 //! Git repository wrapper
 
+#![allow(clippy::cast_possible_truncation)]
+
 use crate::config::expand_tilde;
 use crate::error::{Error, Result};
 use crate::git::{CommitInfo, DiffStats, FileChange};
@@ -7,7 +9,7 @@ use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use git2::{DiffOptions, Repository as Git2Repository};
 use std::path::Path;
 
-/// Wrapper around git2::Repository with convenience methods
+/// Wrapper around `git2::Repository` with convenience methods
 pub struct Repository {
     inner: Git2Repository,
     name: String,
@@ -69,7 +71,9 @@ impl Repository {
 
         // Start from the specified branch or HEAD
         if let Some(branch_name) = branch {
-            let reference = self.inner.find_reference(&format!("refs/heads/{branch_name}"))?;
+            let reference = self
+                .inner
+                .find_reference(&format!("refs/heads/{branch_name}"))?;
             revwalk.push_ref(reference.name().unwrap_or("HEAD"))?;
         } else {
             revwalk.push_head()?;
@@ -186,12 +190,12 @@ impl Repository {
         Ok(stats)
     }
 
-    /// Convert NaiveDate to DateTime<Utc> at midnight
+    /// Convert `NaiveDate` to `DateTime<Utc>` at midnight
     fn date_to_datetime(date: NaiveDate) -> DateTime<Utc> {
         Utc.from_utc_datetime(&date.and_hms_opt(0, 0, 0).unwrap())
     }
 
-    /// Convert git2::Time to DateTime<Utc>
+    /// Convert `git2::Time` to `DateTime<Utc>`
     fn git_time_to_datetime(time: git2::Time) -> DateTime<Utc> {
         DateTime::from_timestamp(time.seconds(), 0).unwrap_or_else(Utc::now)
     }

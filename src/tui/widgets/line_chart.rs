@@ -1,5 +1,7 @@
 //! Line chart widget
 
+#![allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+
 use crate::tui::app::{App, Metric};
 use ratatui::prelude::*;
 use ratatui::widgets::{Axis, Block, Borders, Chart, Dataset, GraphType, Paragraph};

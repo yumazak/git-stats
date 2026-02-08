@@ -1,5 +1,7 @@
 //! Core statistics types
 
+#![allow(clippy::cast_possible_wrap)]
+
 use chrono::{NaiveDate, Utc};
 use serde::Serialize;
 
@@ -63,11 +65,7 @@ impl DateRange {
         let to = self.to;
         std::iter::successors(Some(from), move |&d| {
             let next = d + chrono::Duration::days(1);
-            if next <= to {
-                Some(next)
-            } else {
-                None
-            }
+            if next <= to { Some(next) } else { None }
         })
     }
 }
@@ -98,6 +96,7 @@ pub struct PeriodStats {
     pub files_changed: u32,
 }
 
+#[allow(clippy::trivially_copy_pass_by_ref)]
 fn serialize_date<S>(date: &NaiveDate, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
@@ -141,7 +140,7 @@ impl PeriodStats {
         self.net_lines = self.calculate_net_lines();
     }
 
-    /// Update net_lines based on current additions/deletions
+    /// Update `net_lines` based on current additions/deletions
     pub fn update_net_lines(&mut self) {
         self.net_lines = self.calculate_net_lines();
     }

@@ -60,14 +60,14 @@ pub fn default_config_path() -> Option<PathBuf> {
 pub fn expand_tilde(path: &Path) -> PathBuf {
     let path_str = path.to_string_lossy();
 
-    if path_str.starts_with('~') {
-        if let Some(home) = dirs::home_dir() {
-            if path_str == "~" {
-                return home;
-            }
-            if let Some(rest) = path_str.strip_prefix("~/") {
-                return home.join(rest);
-            }
+    if path_str.starts_with('~')
+        && let Some(home) = dirs::home_dir()
+    {
+        if path_str == "~" {
+            return home;
+        }
+        if let Some(rest) = path_str.strip_prefix("~/") {
+            return home.join(rest);
         }
     }
 

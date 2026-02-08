@@ -1,5 +1,7 @@
 //! Statistics collection from commits
 
+#![allow(clippy::cast_possible_truncation)]
+
 use crate::cli::args::Period;
 use crate::git::CommitInfo;
 use crate::stats::types::{AnalysisResult, DateRange, PeriodStats};
@@ -46,7 +48,9 @@ pub fn collect_stats(
             )
         };
 
-        let entry = daily_stats.entry(date).or_insert_with(|| PeriodStats::new(date));
+        let entry = daily_stats
+            .entry(date)
+            .or_insert_with(|| PeriodStats::new(date));
         entry.commits += 1;
         entry.additions += additions;
         entry.deletions += deletions;
@@ -56,7 +60,9 @@ pub fn collect_stats(
 
     // Fill in missing days with zero stats
     for date in range.iter_days() {
-        daily_stats.entry(date).or_insert_with(|| PeriodStats::new(date));
+        daily_stats
+            .entry(date)
+            .or_insert_with(|| PeriodStats::new(date));
     }
 
     // Convert to sorted vector
@@ -107,7 +113,10 @@ fn aggregate_by_month(daily_stats: Vec<PeriodStats>) -> Vec<PeriodStats> {
         let key = (stat.date.year(), stat.date.month());
 
         let entry = monthly.entry(key).or_insert_with(|| {
-            PeriodStats::with_label(stat.date, format!("{}-{:02}", stat.date.year(), stat.date.month()))
+            PeriodStats::with_label(
+                stat.date,
+                format!("{}-{:02}", stat.date.year(), stat.date.month()),
+            )
         });
         entry.merge(&stat);
     }
@@ -124,9 +133,9 @@ fn aggregate_by_year(daily_stats: Vec<PeriodStats>) -> Vec<PeriodStats> {
     for stat in daily_stats {
         let year = stat.date.year();
 
-        let entry = yearly.entry(year).or_insert_with(|| {
-            PeriodStats::with_label(stat.date, year.to_string())
-        });
+        let entry = yearly
+            .entry(year)
+            .or_insert_with(|| PeriodStats::with_label(stat.date, year.to_string()));
         entry.merge(&stat);
     }
 
@@ -204,7 +213,13 @@ mod tests {
 
         let range = DateRange::new(date, date);
         let extensions = vec!["rs".to_string()];
-        let result = collect_stats("test", vec![commit], range, Period::Daily, Some(&extensions));
+        let result = collect_stats(
+            "test",
+            vec![commit],
+            range,
+            Period::Daily,
+            Some(&extensions),
+        );
 
         // Only .rs file should be counted
         assert_eq!(result.total.additions, 100);
