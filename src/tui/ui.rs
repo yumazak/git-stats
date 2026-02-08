@@ -1,7 +1,9 @@
 //! UI rendering
 
-use crate::tui::app::App;
-use crate::tui::widgets::{render_line_chart, render_line_chart_for_metric};
+use crate::tui::app::{App, Metric};
+use crate::tui::widgets::{
+    render_diverging_bar_chart, render_line_chart, render_line_chart_for_metric,
+};
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
@@ -55,35 +57,23 @@ fn render_single_chart(frame: &mut Frame, area: Rect, app: &App) {
 }
 
 fn render_split_charts(frame: &mut Frame, area: Rect, app: &App) {
-    // Split into 2 rows: top row with 3 charts, bottom row with 2 charts
-    let rows = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+    // Split into left (2/3) and right (1/3) columns
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Ratio(2, 3), Constraint::Ratio(1, 3)])
         .split(area);
 
-    // Top row: Commits, Additions, Deletions
-    let top_cols = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(33),
-            Constraint::Percentage(34),
-            Constraint::Percentage(33),
-        ])
-        .split(rows[0]);
-
-    // Bottom row: Net Lines, Files Changed
-    let bottom_cols = Layout::default()
-        .direction(Direction::Horizontal)
+    // Left column: Commits (top) + Files Changed (bottom)
+    let left_rows = Layout::default()
+        .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(rows[1]);
+        .split(cols[0]);
 
-    let metrics = App::all_metrics();
+    render_line_chart_for_metric(frame, left_rows[0], app, Metric::Commits);
+    render_line_chart_for_metric(frame, left_rows[1], app, Metric::FilesChanged);
 
-    render_line_chart_for_metric(frame, top_cols[0], app, metrics[0]);
-    render_line_chart_for_metric(frame, top_cols[1], app, metrics[1]);
-    render_line_chart_for_metric(frame, top_cols[2], app, metrics[2]);
-    render_line_chart_for_metric(frame, bottom_cols[0], app, metrics[3]);
-    render_line_chart_for_metric(frame, bottom_cols[1], app, metrics[4]);
+    // Right column: Diverging bar chart for Additions/Deletions
+    render_diverging_bar_chart(frame, cols[1], app);
 }
 
 fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
@@ -94,8 +84,8 @@ fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
     // Summary stats
     let total = &app.result.total;
     let summary = format!(
-        "Total: {} commits | +{} -{} (net: {}) | {} files",
-        total.commits, total.additions, total.deletions, total.net_lines, total.files_changed
+        "Total: {} commits | +{} -{} | {} files",
+        total.commits, total.additions, total.deletions, total.files_changed
     );
 
     let footer_text = format!("{help_text}\n{summary}");

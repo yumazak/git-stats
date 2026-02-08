@@ -12,14 +12,20 @@ use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::prelude::*;
 use std::io::stdout;
 
+/// Data point for additions/deletions diverging bar chart
+#[derive(Debug, Clone)]
+pub struct AddDelDataPoint {
+    pub label: String,
+    pub additions: u64,
+    pub deletions: u64,
+}
+
 /// Metric to display in charts
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Metric {
     #[default]
     Commits,
-    Additions,
-    Deletions,
-    NetLines,
+    AdditionsAndDeletions,
     FilesChanged,
 }
 
@@ -28,10 +34,8 @@ impl Metric {
     #[must_use]
     pub fn next(self) -> Self {
         match self {
-            Self::Commits => Self::Additions,
-            Self::Additions => Self::Deletions,
-            Self::Deletions => Self::NetLines,
-            Self::NetLines => Self::FilesChanged,
+            Self::Commits => Self::AdditionsAndDeletions,
+            Self::AdditionsAndDeletions => Self::FilesChanged,
             Self::FilesChanged => Self::Commits,
         }
     }
@@ -41,10 +45,8 @@ impl Metric {
     pub fn prev(self) -> Self {
         match self {
             Self::Commits => Self::FilesChanged,
-            Self::Additions => Self::Commits,
-            Self::Deletions => Self::Additions,
-            Self::NetLines => Self::Deletions,
-            Self::FilesChanged => Self::NetLines,
+            Self::AdditionsAndDeletions => Self::Commits,
+            Self::FilesChanged => Self::AdditionsAndDeletions,
         }
     }
 
@@ -53,9 +55,7 @@ impl Metric {
     pub fn name(self) -> &'static str {
         match self {
             Self::Commits => "Commits",
-            Self::Additions => "Additions",
-            Self::Deletions => "Deletions",
-            Self::NetLines => "Net Lines",
+            Self::AdditionsAndDeletions => "Additions / Deletions",
             Self::FilesChanged => "Files Changed",
         }
     }
@@ -141,13 +141,17 @@ impl App {
             KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.should_quit = true;
             }
-            // Next metric
+            // Next metric (only in single metric mode)
             KeyCode::Tab | KeyCode::Right | KeyCode::Char('l') => {
-                self.metric = self.metric.next();
+                if self.single_metric {
+                    self.metric = self.metric.next();
+                }
             }
-            // Previous metric
+            // Previous metric (only in single metric mode)
             KeyCode::BackTab | KeyCode::Left | KeyCode::Char('h') => {
-                self.metric = self.metric.prev();
+                if self.single_metric {
+                    self.metric = self.metric.prev();
+                }
             }
             // Toggle single/split metric view
             KeyCode::Char('m') => {
@@ -172,9 +176,7 @@ impl App {
             .map(|s| {
                 let value = match metric {
                     Metric::Commits => i64::from(s.commits),
-                    Metric::Additions => s.additions as i64,
-                    Metric::Deletions => s.deletions as i64,
-                    Metric::NetLines => s.net_lines,
+                    Metric::AdditionsAndDeletions => s.net_lines,
                     Metric::FilesChanged => i64::from(s.files_changed),
                 };
                 (s.label.clone(), value)
@@ -184,14 +186,26 @@ impl App {
 
     /// Get all metrics
     #[must_use]
-    pub fn all_metrics() -> [Metric; 5] {
+    pub fn all_metrics() -> [Metric; 3] {
         [
             Metric::Commits,
-            Metric::Additions,
-            Metric::Deletions,
-            Metric::NetLines,
+            Metric::AdditionsAndDeletions,
             Metric::FilesChanged,
         ]
+    }
+
+    /// Get additions/deletions data for diverging bar chart
+    #[must_use]
+    pub fn additions_deletions_data(&self) -> Vec<AddDelDataPoint> {
+        self.result
+            .stats
+            .iter()
+            .map(|s| AddDelDataPoint {
+                label: s.label.clone(),
+                additions: s.additions,
+                deletions: s.deletions,
+            })
+            .collect()
     }
 }
 
@@ -223,7 +237,7 @@ mod tests {
     #[test]
     fn test_metric_cycle() {
         let metric = Metric::Commits;
-        assert_eq!(metric.next(), Metric::Additions);
+        assert_eq!(metric.next(), Metric::AdditionsAndDeletions);
         assert_eq!(metric.prev(), Metric::FilesChanged);
     }
 
@@ -240,6 +254,18 @@ mod tests {
     #[test]
     fn test_all_metrics() {
         let metrics = App::all_metrics();
-        assert_eq!(metrics.len(), 5);
+        assert_eq!(metrics.len(), 3);
+    }
+
+    #[test]
+    fn test_additions_deletions_data() {
+        let result = make_result();
+        let app = App::new(result, false);
+
+        let data = app.additions_deletions_data();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0].label, "2024-01-01");
+        assert_eq!(data[0].additions, 100);
+        assert_eq!(data[0].deletions, 20);
     }
 }
