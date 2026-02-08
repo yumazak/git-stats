@@ -8,7 +8,7 @@ use crate::config::{
 use crate::error::{Error, Result};
 use crate::git::{CommitInfo, Repository};
 use crate::output::{CsvFormatter, Formatter, JsonFormatter};
-use crate::stats::{DateRange, Days, collect_stats};
+use crate::stats::{DateRange, Days, collect_activity_stats, collect_stats};
 use crate::tui::App;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::path::{Path, PathBuf};
@@ -116,6 +116,7 @@ pub fn execute(args: Args) -> Result<()> {
     // Collect statistics
     spinner.set_message("Calculating statistics...");
     let extensions = args.ext.as_deref();
+    let activity_stats = collect_activity_stats(&all_commits);
     let result = collect_stats(&combined_name, all_commits, range, args.period, extensions);
 
     // Spinner is automatically cleared by Drop when going out of scope or on error
@@ -134,7 +135,7 @@ pub fn execute(args: Args) -> Result<()> {
             print!("{output}");
         }
         OutputFormat::Tui => {
-            let mut app = App::new(result, args.single_metric);
+            let mut app = App::new(result, activity_stats, args.single_metric);
             app.run()?;
         }
     }

@@ -3,7 +3,7 @@
 #![allow(clippy::cast_possible_wrap)]
 
 use crate::error::Result;
-use crate::stats::AnalysisResult;
+use crate::stats::{ActivityStats, AnalysisResult};
 use crate::tui::event::{Event, EventHandler};
 use crate::tui::ui;
 use crossterm::ExecutableCommand;
@@ -65,6 +65,8 @@ impl Metric {
 pub struct App {
     /// Analysis result to display
     pub result: AnalysisResult,
+    /// Activity statistics (commits by weekday and hour)
+    pub activity_stats: ActivityStats,
     /// Currently selected metric
     pub metric: Metric,
     /// Whether the app should quit
@@ -78,9 +80,10 @@ pub struct App {
 impl App {
     /// Create a new App instance
     #[must_use]
-    pub fn new(result: AnalysisResult, single_metric: bool) -> Self {
+    pub fn new(result: AnalysisResult, activity_stats: ActivityStats, single_metric: bool) -> Self {
         Self {
             result,
+            activity_stats,
             metric: Metric::default(),
             should_quit: false,
             single_metric,
@@ -276,7 +279,7 @@ mod tests {
     #[test]
     fn test_metric_values() {
         let result = make_result();
-        let app = App::new(result, false);
+        let app = App::new(result, ActivityStats::default(), false);
 
         let values = app.metric_values();
         assert_eq!(values.len(), 1);
@@ -292,7 +295,7 @@ mod tests {
     #[test]
     fn test_additions_deletions_data() {
         let result = make_result();
-        let app = App::new(result, false);
+        let app = App::new(result, ActivityStats::default(), false);
 
         let data = app.additions_deletions_data();
         assert_eq!(data.len(), 1);
@@ -325,7 +328,7 @@ mod tests {
     #[test]
     fn test_scroll_up_increases_offset() {
         let result = make_result_with_multiple_days();
-        let mut app = App::new(result, false);
+        let mut app = App::new(result, ActivityStats::default(), false);
 
         assert_eq!(app.scroll_offset, 0);
         app.scroll_up();
@@ -337,7 +340,7 @@ mod tests {
     #[test]
     fn test_scroll_down_decreases_offset() {
         let result = make_result_with_multiple_days();
-        let mut app = App::new(result, false);
+        let mut app = App::new(result, ActivityStats::default(), false);
 
         app.scroll_offset = 3;
         app.scroll_down();
@@ -351,7 +354,7 @@ mod tests {
     #[test]
     fn test_scroll_down_does_not_go_negative() {
         let result = make_result_with_multiple_days();
-        let mut app = App::new(result, false);
+        let mut app = App::new(result, ActivityStats::default(), false);
 
         assert_eq!(app.scroll_offset, 0);
         app.scroll_down();
@@ -361,7 +364,7 @@ mod tests {
     #[test]
     fn test_scroll_up_respects_max_offset() {
         let result = make_result_with_multiple_days();
-        let mut app = App::new(result, false);
+        let mut app = App::new(result, ActivityStats::default(), false);
 
         // 5 items, max offset should be 4 (data_len - 1)
         for _ in 0..10 {
@@ -373,7 +376,7 @@ mod tests {
     #[test]
     fn test_scroll_offset_resets_on_view_toggle() {
         let result = make_result_with_multiple_days();
-        let mut app = App::new(result, false);
+        let mut app = App::new(result, ActivityStats::default(), false);
 
         app.scroll_offset = 3;
         // Simulate pressing 'm' to toggle view

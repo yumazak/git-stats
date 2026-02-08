@@ -4,8 +4,8 @@
 
 use crate::cli::args::Period;
 use crate::git::CommitInfo;
-use crate::stats::types::{AnalysisResult, DateRange, PeriodStats};
-use chrono::{Datelike, NaiveDate};
+use crate::stats::types::{ActivityStats, AnalysisResult, DateRange, PeriodStats};
+use chrono::{Datelike, NaiveDate, Timelike};
 use std::collections::HashMap;
 
 /// Collect statistics from a list of commits
@@ -142,6 +142,25 @@ fn aggregate_by_year(daily_stats: Vec<PeriodStats>) -> Vec<PeriodStats> {
     let mut result: Vec<_> = yearly.into_values().collect();
     result.sort_by_key(|s| s.date);
     result
+}
+
+/// Collect activity statistics (commits by weekday and hour) from commits
+///
+/// Groups commits by weekday (Mon-Sun) and hour (0-23) based on UTC timestamps.
+#[must_use]
+pub fn collect_activity_stats(commits: &[CommitInfo]) -> ActivityStats {
+    let mut stats = ActivityStats::default();
+
+    for commit in commits {
+        // chrono::Weekday: Mon=0, Tue=1, ..., Sun=6
+        let weekday_index = commit.timestamp.weekday().num_days_from_monday() as usize;
+        let hour_index = commit.timestamp.hour() as usize;
+
+        stats.weekday[weekday_index] += 1;
+        stats.hourly[hour_index] += 1;
+    }
+
+    stats
 }
 
 #[cfg(test)]
@@ -292,5 +311,100 @@ mod tests {
         assert_eq!(monthly.len(), 2);
         assert!(monthly[0].label.contains("2024-01"));
         assert!(monthly[1].label.contains("2024-02"));
+    }
+
+    #[test]
+    fn test_collect_activity_stats_empty() {
+        let commits: Vec<CommitInfo> = vec![];
+        let stats = collect_activity_stats(&commits);
+
+        assert_eq!(stats.weekday, [0; 7]);
+        assert_eq!(stats.hourly, [0; 24]);
+    }
+
+    #[test]
+    fn test_collect_activity_stats_single_commit() {
+        // Monday, 2024-01-01, 10:30 UTC
+        let date = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
+        let timestamp = Utc.from_utc_datetime(&date.and_hms_opt(10, 30, 0).unwrap());
+        let commit = CommitInfo {
+            id: "abc1234".to_string(),
+            timestamp,
+            is_merge: false,
+            diff: DiffStats::default(),
+        };
+
+        let stats = collect_activity_stats(&[commit]);
+
+        // Monday = index 0
+        assert_eq!(stats.weekday[0], 1);
+        assert_eq!(stats.weekday[1..], [0; 6]);
+
+        // Hour 10
+        assert_eq!(stats.hourly[10], 1);
+        assert_eq!(stats.hourly[0..10], [0; 10]);
+        assert_eq!(stats.hourly[11..], [0; 13]);
+    }
+
+    #[test]
+    fn test_collect_activity_stats_multiple_commits() {
+        let commits: Vec<CommitInfo> = vec![
+            // Monday 10:00
+            {
+                let date = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
+                let timestamp = Utc.from_utc_datetime(&date.and_hms_opt(10, 0, 0).unwrap());
+                CommitInfo {
+                    id: "a".to_string(),
+                    timestamp,
+                    is_merge: false,
+                    diff: DiffStats::default(),
+                }
+            },
+            // Monday 10:30 (same day, same hour)
+            {
+                let date = NaiveDate::from_ymd_opt(2024, 1, 1).unwrap();
+                let timestamp = Utc.from_utc_datetime(&date.and_hms_opt(10, 30, 0).unwrap());
+                CommitInfo {
+                    id: "b".to_string(),
+                    timestamp,
+                    is_merge: false,
+                    diff: DiffStats::default(),
+                }
+            },
+            // Tuesday 14:00
+            {
+                let date = NaiveDate::from_ymd_opt(2024, 1, 2).unwrap();
+                let timestamp = Utc.from_utc_datetime(&date.and_hms_opt(14, 0, 0).unwrap());
+                CommitInfo {
+                    id: "c".to_string(),
+                    timestamp,
+                    is_merge: false,
+                    diff: DiffStats::default(),
+                }
+            },
+            // Sunday 23:59
+            {
+                let date = NaiveDate::from_ymd_opt(2024, 1, 7).unwrap();
+                let timestamp = Utc.from_utc_datetime(&date.and_hms_opt(23, 59, 0).unwrap());
+                CommitInfo {
+                    id: "d".to_string(),
+                    timestamp,
+                    is_merge: false,
+                    diff: DiffStats::default(),
+                }
+            },
+        ];
+
+        let stats = collect_activity_stats(&commits);
+
+        // Weekday: Mon=2, Tue=1, Sun=1
+        assert_eq!(stats.weekday[0], 2); // Monday
+        assert_eq!(stats.weekday[1], 1); // Tuesday
+        assert_eq!(stats.weekday[6], 1); // Sunday
+
+        // Hourly: 10=2, 14=1, 23=1
+        assert_eq!(stats.hourly[10], 2);
+        assert_eq!(stats.hourly[14], 1);
+        assert_eq!(stats.hourly[23], 1);
     }
 }

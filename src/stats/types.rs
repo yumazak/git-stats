@@ -193,6 +193,29 @@ impl AnalysisResult {
     }
 }
 
+/// Activity statistics by weekday and hour
+#[derive(Debug, Clone, Default)]
+pub struct ActivityStats {
+    /// Commits per weekday (0=Mon, 1=Tue, ..., 6=Sun)
+    pub weekday: [u32; 7],
+    /// Commits per hour (0-23)
+    pub hourly: [u32; 24],
+}
+
+impl ActivityStats {
+    /// Get weekday labels
+    #[must_use]
+    pub const fn weekday_labels() -> [&'static str; 7] {
+        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    }
+
+    /// Get hour labels (0-23)
+    #[must_use]
+    pub fn hour_labels() -> [String; 24] {
+        std::array::from_fn(|i| i.to_string())
+    }
+}
+
 /// Aggregated total statistics
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct TotalStats {
@@ -344,5 +367,28 @@ mod tests {
         let json = serde_json::to_string(&result).unwrap();
         assert!(json.contains("\"repository\":\"test-repo\""));
         assert!(json.contains("\"from\":\"2024-01-01\""));
+    }
+
+    #[test]
+    fn test_activity_stats_default() {
+        let stats = ActivityStats::default();
+        assert_eq!(stats.weekday, [0; 7]);
+        assert_eq!(stats.hourly, [0; 24]);
+    }
+
+    #[test]
+    fn test_activity_stats_weekday_labels() {
+        let labels = ActivityStats::weekday_labels();
+        assert_eq!(labels.len(), 7);
+        assert_eq!(labels[0], "Mon");
+        assert_eq!(labels[6], "Sun");
+    }
+
+    #[test]
+    fn test_activity_stats_hour_labels() {
+        let labels = ActivityStats::hour_labels();
+        assert_eq!(labels.len(), 24);
+        assert_eq!(labels[0], "0");
+        assert_eq!(labels[23], "23");
     }
 }

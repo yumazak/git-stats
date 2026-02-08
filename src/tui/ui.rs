@@ -1,8 +1,10 @@
 //! UI rendering
 
+use crate::stats::ActivityStats;
 use crate::tui::app::{App, Metric};
 use crate::tui::widgets::{
-    render_diverging_bar_chart, render_line_chart, render_line_chart_for_metric,
+    BarDataPoint, render_diverging_bar_chart, render_horizontal_bar_chart, render_line_chart,
+    render_line_chart_for_metric,
 };
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
@@ -72,8 +74,47 @@ fn render_split_charts(frame: &mut Frame, area: Rect, app: &App) {
     render_line_chart_for_metric(frame, left_rows[0], app, Metric::Commits);
     render_line_chart_for_metric(frame, left_rows[1], app, Metric::FilesChanged);
 
-    // Right column: Diverging bar chart for Additions/Deletions
-    render_diverging_bar_chart(frame, cols[1], app);
+    // Right column: 3 sections (Additions/Deletions, Weekday, Hourly)
+    // Ratio 1:1:3 - Hourly needs more space for 24 rows
+    let right_rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Ratio(1, 5),
+            Constraint::Ratio(1, 5),
+            Constraint::Ratio(3, 5),
+        ])
+        .split(cols[1]);
+
+    // Top: Diverging bar chart for Additions/Deletions
+    render_diverging_bar_chart(frame, right_rows[0], app);
+
+    // Middle: Weekday activity chart
+    render_weekday_chart(frame, right_rows[1], &app.activity_stats);
+
+    // Bottom: Hourly activity chart
+    render_hourly_chart(frame, right_rows[2], &app.activity_stats);
+}
+
+fn render_weekday_chart(frame: &mut Frame, area: Rect, stats: &ActivityStats) {
+    let labels = ActivityStats::weekday_labels();
+    let data: Vec<BarDataPoint> = labels
+        .iter()
+        .zip(stats.weekday.iter())
+        .map(|(label, &value)| BarDataPoint::new(*label, value))
+        .collect();
+
+    render_horizontal_bar_chart(frame, area, "Weekday", &data, Color::Cyan);
+}
+
+fn render_hourly_chart(frame: &mut Frame, area: Rect, stats: &ActivityStats) {
+    let data: Vec<BarDataPoint> = stats
+        .hourly
+        .iter()
+        .enumerate()
+        .map(|(hour, &value)| BarDataPoint::new(hour.to_string(), value))
+        .collect();
+
+    render_horizontal_bar_chart(frame, area, "Hour", &data, Color::Magenta);
 }
 
 fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
