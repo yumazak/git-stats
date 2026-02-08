@@ -70,3 +70,14 @@ gh issue create --title "Title" --body "Description" --label "enhancement,priori
 ### Linking PRs and Issues
 
 Include `Fixes #123` in PR description to auto-close the issue on merge.
+
+### Working on Issues
+
+When starting work on an issue:
+
+1. **Assign yourself** to the issue
+2. **Create a feature branch**: `feature/issue-{number}-short-description`
+3. **Open a Draft PR early** (optional but recommended for visibility)
+4. **Comment on the issue** if it will take multiple days
+
+This keeps parallel development coordination simple without extra tooling.
