@@ -1,0 +1,26 @@
+{
+  "home": {
+    "en": "Home",
+    "ja": "ホーム"
+  },
+  "gettingStarted": {
+    "en": "Getting Started",
+    "ja": "はじめに"
+  },
+  "cliReference": {
+    "en": "CLI Reference",
+    "ja": "CLI リファレンス"
+  },
+  "configuration": {
+    "en": "Configuration",
+    "ja": "設定"
+  },
+  "contributing": {
+    "en": "Contributing",
+    "ja": "コントリビュート"
+  },
+  "changelog": {
+    "en": "Changelog",
+    "ja": "変更履歴"
+  }
+}
