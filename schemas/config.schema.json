@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/yumazak/git-stats/schemas/config.schema.json",
+  "$id": "https://github.com/yumazak/kodo/schemas/config.schema.json",
   "title": "kodo Configuration",
   "description": "Configuration file for kodo CLI tool",
   "type": "object",

@@ -1,6 +1,6 @@
 # kodo
 
-[![CI](https://github.com/yumazak/git-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/git-stats/actions/workflows/ci.yml)
+[![CI](https://github.com/yumazak/kodo/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/kodo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A CLI tool for analyzing Git commit statistics with TUI visualization.
@@ -27,7 +27,7 @@ cargo install --path .
 
 ### From Releases
 
-Download the appropriate binary for your platform from the [Releases](https://github.com/yumazak/git-stats/releases) page.
+Download the appropriate binary for your platform from the [Releases](https://github.com/yumazak/kodo/releases) page.
 
 ## Usage
 
@@ -77,7 +77,7 @@ Create a config file at `~/.config/kodo/config.json`:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/yumazak/git-stats/main/schemas/config.schema.json",
+  "$schema": "https://raw.githubusercontent.com/yumazak/kodo/main/schemas/config.schema.json",
   "repositories": [
     {
       "name": "my-project",

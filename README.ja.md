@@ -1,6 +1,6 @@
 # kodo
 
-[![CI](https://github.com/yumazak/git-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/git-stats/actions/workflows/ci.yml)
+[![CI](https://github.com/yumazak/kodo/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/kodo/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Git コミット統計を分析し、TUI で可視化する CLI ツール。
@@ -27,7 +27,7 @@ cargo install --path .
 
 ### リリースから
 
-[Releases](https://github.com/yumazak/git-stats/releases) ページから、お使いのプラットフォームに対応したバイナリをダウンロードしてください。
+[Releases](https://github.com/yumazak/kodo/releases) ページから、お使いのプラットフォームに対応したバイナリをダウンロードしてください。
 
 ## 使い方
 
@@ -77,7 +77,7 @@ kodo --single-metric
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/yumazak/git-stats/main/schemas/config.schema.json",
+  "$schema": "https://raw.githubusercontent.com/yumazak/kodo/main/schemas/config.schema.json",
   "repositories": [
     {
       "name": "my-project",
