@@ -70,12 +70,14 @@ pub fn render_diverging_bar_chart(frame: &mut Frame, area: Rect, app: &App) {
     // Determine how many rows we can display
     let available_rows = inner.height as usize;
 
-    // Take last N items if there are more than available rows
-    let display_data: Vec<_> = if data.len() > available_rows {
-        data.iter().skip(data.len() - available_rows).collect()
-    } else {
-        data.iter().collect()
-    };
+    // Calculate display range with scroll offset
+    // offset=0 means show latest data (end of array)
+    // offset>0 means scroll up to see older data
+    let total = data.len();
+    let scroll_offset = app.scroll_offset.min(total.saturating_sub(1));
+    let end = total.saturating_sub(scroll_offset);
+    let start = end.saturating_sub(available_rows);
+    let display_data: Vec<_> = data[start..end].iter().collect();
 
     // Find max value for unified scale
     let max_value = display_data
