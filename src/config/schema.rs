@@ -1,10 +1,10 @@
 //! Configuration schema definitions
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Root configuration structure
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Config {
     /// JSON Schema reference (for IDE support)
     #[serde(rename = "$schema")]
@@ -19,7 +19,7 @@ pub struct Config {
 }
 
 /// Single repository configuration
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RepoConfig {
     /// Display name
     pub name: String,
@@ -32,7 +32,7 @@ pub struct RepoConfig {
 }
 
 /// Default settings
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Defaults {
     /// Number of days to analyze
     #[serde(default = "default_days")]

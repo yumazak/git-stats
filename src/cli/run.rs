@@ -1,13 +1,16 @@
 //! CLI execution logic
 
-use crate::cli::args::{Args, OutputFormat};
-use crate::config::{RepoConfig, default_config_path, expand_tilde, load_config};
+use crate::cli::args::{AddArgs, Args, Command, OutputFormat};
+use crate::config::{
+    Config, Defaults, RepoConfig, default_config_path, default_config_path_for_save, expand_tilde,
+    load_config, save_config,
+};
 use crate::error::{Error, Result};
 use crate::git::{CommitInfo, Repository};
 use crate::output::{CsvFormatter, Formatter, JsonFormatter};
 use crate::stats::{DateRange, Days, collect_stats};
 use crate::tui::App;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Repository info for analysis
 struct RepoInfo {
@@ -26,6 +29,14 @@ struct RepoInfo {
 /// - Output formatting fails
 #[allow(clippy::needless_pass_by_value)]
 pub fn execute(args: Args) -> Result<()> {
+    // Handle subcommands
+    if let Some(command) = args.command {
+        return match command {
+            Command::Add(add_args) => execute_add(add_args, args.config),
+        };
+    }
+
+    // Default: analyze repositories
     // Get repositories to analyze
     let repos = get_repositories(&args)?;
 
@@ -152,6 +163,99 @@ fn filter_and_validate_repos(repos: &[RepoConfig], filter: Option<&[String]>) ->
         .collect()
 }
 
+/// Execute the `add` subcommand
+fn execute_add(add_args: AddArgs, config_path: Option<PathBuf>) -> Result<()> {
+    // Resolve the path
+    let path = expand_tilde(&add_args.path);
+    let absolute_path = if path.is_absolute() {
+        path
+    } else {
+        std::env::current_dir()?.join(&path).canonicalize()?
+    };
+
+    // Verify it's a git repository
+    if !is_git_repo(&absolute_path) {
+        return Err(Error::NotGitRepo {
+            path: absolute_path,
+        });
+    }
+
+    // Determine the repository name
+    let name = add_args.name.unwrap_or_else(|| {
+        absolute_path.file_name().map_or_else(
+            || "repository".to_string(),
+            |s| s.to_string_lossy().to_string(),
+        )
+    });
+
+    // Get config path
+    let config_file = config_path
+        .or_else(default_config_path)
+        .or_else(default_config_path_for_save)
+        .ok_or_else(|| Error::ConfigInvalid {
+            message: "Could not determine config path".to_string(),
+        })?;
+
+    // Load existing config or create new one
+    let mut config = if config_file.exists() {
+        load_config(&config_file)?
+    } else {
+        Config {
+            schema: Some(
+                "https://raw.githubusercontent.com/yumazak/kodo/main/schemas/config.schema.json"
+                    .to_string(),
+            ),
+            repositories: Vec::new(),
+            defaults: Defaults::default(),
+        }
+    };
+
+    // Format path for storage (use ~ for home directory)
+    let path_for_storage = shorten_home_path(&absolute_path);
+
+    // Check for duplicates
+    if config
+        .repositories
+        .iter()
+        .any(|r| expand_tilde(&r.path) == absolute_path)
+    {
+        println!("Repository already exists in config: {name}");
+        return Ok(());
+    }
+
+    // Add the repository
+    let repo_config = RepoConfig {
+        name: name.clone(),
+        path: path_for_storage.clone(),
+        branch: add_args.branch,
+    };
+    config.repositories.push(repo_config);
+
+    // Save the config
+    save_config(&config, &config_file)?;
+
+    println!("Added repository: {name}");
+    println!("  Path: {}", path_for_storage.display());
+    println!("  Config: {}", config_file.display());
+
+    Ok(())
+}
+
+/// Check if a path is a git repository
+fn is_git_repo(path: &Path) -> bool {
+    path.join(".git").exists() || path.join("HEAD").exists()
+}
+
+/// Shorten path by replacing home directory with ~
+fn shorten_home_path(path: &Path) -> PathBuf {
+    if let Some(home) = dirs::home_dir()
+        && let Ok(relative) = path.strip_prefix(&home)
+    {
+        return PathBuf::from("~").join(relative);
+    }
+    path.to_path_buf()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -202,6 +306,7 @@ mod tests {
         let dir = create_test_repo();
 
         let args = Args {
+            command: None,
             config: None,
             repo: Some(dir.path().to_path_buf()),
             days: 7,
@@ -221,6 +326,7 @@ mod tests {
     #[test]
     fn test_get_repositories_with_repo_arg() {
         let args = Args {
+            command: None,
             config: None,
             repo: Some(PathBuf::from("/tmp/test-repo")),
             days: 7,

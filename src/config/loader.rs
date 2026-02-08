@@ -52,6 +52,38 @@ pub fn default_config_path() -> Option<PathBuf> {
     dirs::config_dir().map(|p| p.join("kodo").join("config.json"))
 }
 
+/// Save configuration to a JSON file
+///
+/// Creates parent directories if they don't exist.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - Parent directory cannot be created
+/// - The file cannot be written
+/// - JSON serialization fails
+pub fn save_config(config: &Config, path: &Path) -> Result<()> {
+    // Create parent directories if needed
+    if let Some(parent) = path.parent()
+        && !parent.exists()
+    {
+        fs::create_dir_all(parent)?;
+    }
+
+    let content = serde_json::to_string_pretty(config)?;
+    fs::write(path, content)?;
+
+    Ok(())
+}
+
+/// Get the default configuration file path for saving
+///
+/// Returns `~/.config/kodo/config.json` regardless of whether it exists.
+#[must_use]
+pub fn default_config_path_for_save() -> Option<PathBuf> {
+    dirs::home_dir().map(|home| home.join(".config").join("kodo").join("config.json"))
+}
+
 /// Expand `~` to the home directory in a path
 ///
 /// If the path starts with `~`, it will be replaced with the home directory.

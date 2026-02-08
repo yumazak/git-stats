@@ -1,6 +1,6 @@
 //! Command-line argument definitions
 
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 /// Analyze Git commit statistics across repositories
@@ -8,8 +8,11 @@ use std::path::PathBuf;
 #[command(name = "kodo")]
 #[command(version, about, long_about = None)]
 pub struct Args {
+    #[command(subcommand)]
+    pub command: Option<Command>,
+
     /// Path to config file
-    #[arg(short, long, env = "KODO_CONFIG")]
+    #[arg(short, long, env = "KODO_CONFIG", global = true)]
     pub config: Option<PathBuf>,
 
     /// Repository path (overrides config)
@@ -47,6 +50,28 @@ pub struct Args {
     /// Filter repositories by name (comma-separated, from config)
     #[arg(long, value_delimiter = ',')]
     pub repo_name: Option<Vec<String>>,
+}
+
+/// Available subcommands
+#[derive(Subcommand, Debug)]
+pub enum Command {
+    /// Add a repository to the configuration
+    Add(AddArgs),
+}
+
+/// Arguments for the `add` subcommand
+#[derive(Parser, Debug)]
+pub struct AddArgs {
+    /// Path to the repository to add (use . for current directory)
+    pub path: PathBuf,
+
+    /// Display name for the repository (defaults to directory name)
+    #[arg(short, long)]
+    pub name: Option<String>,
+
+    /// Default branch to analyze
+    #[arg(short, long)]
+    pub branch: Option<String>,
 }
 
 /// Output format options
@@ -122,6 +147,7 @@ mod tests {
         assert!(!args.include_merges);
         assert_eq!(args.output, OutputFormat::Tui);
         assert_eq!(args.period, Period::Daily);
+        assert!(args.command.is_none());
     }
 
     #[test]
@@ -143,5 +169,34 @@ mod tests {
             args.ext,
             Some(vec!["rs".to_string(), "ts".to_string(), "js".to_string()])
         );
+    }
+
+    #[test]
+    fn test_add_command() {
+        let args = Args::parse_from(["kodo", "add", "."]);
+        assert!(matches!(args.command, Some(Command::Add(_))));
+        if let Some(Command::Add(add_args)) = args.command {
+            assert_eq!(add_args.path, PathBuf::from("."));
+            assert!(add_args.name.is_none());
+            assert!(add_args.branch.is_none());
+        }
+    }
+
+    #[test]
+    fn test_add_command_with_options() {
+        let args = Args::parse_from([
+            "kodo",
+            "add",
+            "/tmp/repo",
+            "--name",
+            "my-repo",
+            "--branch",
+            "main",
+        ]);
+        if let Some(Command::Add(add_args)) = args.command {
+            assert_eq!(add_args.path, PathBuf::from("/tmp/repo"));
+            assert_eq!(add_args.name, Some("my-repo".to_string()));
+            assert_eq!(add_args.branch, Some("main".to_string()));
+        }
     }
 }

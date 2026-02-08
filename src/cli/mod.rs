@@ -3,5 +3,5 @@
 pub mod args;
 pub mod run;
 
-pub use args::Args;
+pub use args::{AddArgs, Args, Command};
 pub use run::execute;
