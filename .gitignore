@@ -28,3 +28,6 @@ docs/spec.md
 
 # mise
 .mise.local.toml
+
+# samply profile
+profile.json.gz
