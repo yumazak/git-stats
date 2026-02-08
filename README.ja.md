@@ -19,15 +19,27 @@ Git コミット統計を分析し、TUI で可視化する CLI ツール。
 
 ## インストール
 
-### ソースから
+### mise（推奨）
 
 ```bash
-cargo install --path .
+mise use -g github:yumazak/kodo
+```
+
+### crates.io
+
+```bash
+cargo install kodo
 ```
 
 ### リリースから
 
 [Releases](https://github.com/yumazak/kodo/releases) ページから、お使いのプラットフォームに対応したバイナリをダウンロードしてください。
+
+### ソースから
+
+```bash
+cargo install --path .
+```
 
 ## 使い方
 

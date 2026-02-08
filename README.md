@@ -19,15 +19,27 @@ A CLI tool for analyzing Git commit statistics with TUI visualization.
 
 ## Installation
 
-### From Source
+### mise (Recommended)
 
 ```bash
-cargo install --path .
+mise use -g github:yumazak/kodo
+```
+
+### crates.io
+
+```bash
+cargo install kodo
 ```
 
 ### From Releases
 
 Download the appropriate binary for your platform from the [Releases](https://github.com/yumazak/kodo/releases) page.
+
+### From Source
+
+```bash
+cargo install --path .
+```
 
 ## Usage
 
