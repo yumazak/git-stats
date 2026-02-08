@@ -71,6 +71,8 @@ pub struct App {
     pub should_quit: bool,
     /// Show single metric instead of all metrics
     pub single_metric: bool,
+    /// Scroll offset for diverging bar chart (0 = show latest)
+    pub scroll_offset: usize,
 }
 
 impl App {
@@ -82,6 +84,7 @@ impl App {
             metric: Metric::default(),
             should_quit: false,
             single_metric,
+            scroll_offset: 0,
         }
     }
 
@@ -153,12 +156,41 @@ impl App {
                     self.metric = self.metric.prev();
                 }
             }
+            // Scroll up (past data) - only in split view
+            KeyCode::Up | KeyCode::Char('k') => {
+                if !self.single_metric {
+                    self.scroll_up();
+                }
+            }
+            // Scroll down (towards latest) - only in split view
+            KeyCode::Down | KeyCode::Char('j') => {
+                if !self.single_metric {
+                    self.scroll_down();
+                }
+            }
             // Toggle single/split metric view
             KeyCode::Char('m') => {
                 self.single_metric = !self.single_metric;
+                // Reset scroll offset when toggling views
+                self.scroll_offset = 0;
             }
             _ => {}
         }
+    }
+
+    /// Scroll up to see older data
+    fn scroll_up(&mut self) {
+        let data_len = self.result.stats.len();
+        if data_len > 0 {
+            // Max offset: allows scrolling until the oldest item is visible
+            let max_offset = data_len.saturating_sub(1);
+            self.scroll_offset = (self.scroll_offset + 1).min(max_offset);
+        }
+    }
+
+    /// Scroll down to see newer data
+    fn scroll_down(&mut self) {
+        self.scroll_offset = self.scroll_offset.saturating_sub(1);
     }
 
     /// Get values for the current metric
@@ -267,5 +299,87 @@ mod tests {
         assert_eq!(data[0].label, "2024-01-01");
         assert_eq!(data[0].additions, 100);
         assert_eq!(data[0].deletions, 20);
+    }
+
+    fn make_result_with_multiple_days() -> AnalysisResult {
+        AnalysisResult {
+            repository: "test".to_string(),
+            period: "daily".to_string(),
+            from: NaiveDate::from_ymd_opt(2024, 1, 1).unwrap(),
+            to: NaiveDate::from_ymd_opt(2024, 1, 5).unwrap(),
+            stats: (1..=5)
+                .map(|day| PeriodStats {
+                    label: format!("2024-01-0{day}"),
+                    date: NaiveDate::from_ymd_opt(2024, 1, day).unwrap(),
+                    commits: day,
+                    additions: u64::from(day) * 10,
+                    deletions: u64::from(day) * 2,
+                    net_lines: i64::from(day) * 8,
+                    files_changed: day,
+                })
+                .collect(),
+            total: TotalStats::default(),
+        }
+    }
+
+    #[test]
+    fn test_scroll_up_increases_offset() {
+        let result = make_result_with_multiple_days();
+        let mut app = App::new(result, false);
+
+        assert_eq!(app.scroll_offset, 0);
+        app.scroll_up();
+        assert_eq!(app.scroll_offset, 1);
+        app.scroll_up();
+        assert_eq!(app.scroll_offset, 2);
+    }
+
+    #[test]
+    fn test_scroll_down_decreases_offset() {
+        let result = make_result_with_multiple_days();
+        let mut app = App::new(result, false);
+
+        app.scroll_offset = 3;
+        app.scroll_down();
+        assert_eq!(app.scroll_offset, 2);
+        app.scroll_down();
+        assert_eq!(app.scroll_offset, 1);
+        app.scroll_down();
+        assert_eq!(app.scroll_offset, 0);
+    }
+
+    #[test]
+    fn test_scroll_down_does_not_go_negative() {
+        let result = make_result_with_multiple_days();
+        let mut app = App::new(result, false);
+
+        assert_eq!(app.scroll_offset, 0);
+        app.scroll_down();
+        assert_eq!(app.scroll_offset, 0);
+    }
+
+    #[test]
+    fn test_scroll_up_respects_max_offset() {
+        let result = make_result_with_multiple_days();
+        let mut app = App::new(result, false);
+
+        // 5 items, max offset should be 4 (data_len - 1)
+        for _ in 0..10 {
+            app.scroll_up();
+        }
+        assert_eq!(app.scroll_offset, 4);
+    }
+
+    #[test]
+    fn test_scroll_offset_resets_on_view_toggle() {
+        let result = make_result_with_multiple_days();
+        let mut app = App::new(result, false);
+
+        app.scroll_offset = 3;
+        // Simulate pressing 'm' to toggle view
+        app.single_metric = !app.single_metric;
+        app.scroll_offset = 0; // This happens in handle_key
+
+        assert_eq!(app.scroll_offset, 0);
     }
 }
