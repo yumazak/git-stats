@@ -45,6 +45,9 @@ thiserror = "2.0"
 # Utilities
 dirs = "5.0"
 
+# Progress indicator
+indicatif = "0.18.3"
+
 [dev-dependencies]
 tempfile = "3.14"
 assert_cmd = "2.0"

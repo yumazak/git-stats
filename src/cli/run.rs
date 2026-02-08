@@ -10,13 +10,51 @@ use crate::git::{CommitInfo, Repository};
 use crate::output::{CsvFormatter, Formatter, JsonFormatter};
 use crate::stats::{DateRange, Days, collect_stats};
 use crate::tui::App;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 /// Repository info for analysis
 struct RepoInfo {
     path: PathBuf,
     name: String,
     branch: Option<String>,
+}
+
+/// RAII guard for spinner to ensure cleanup on error
+struct SpinnerGuard(Option<ProgressBar>);
+
+impl SpinnerGuard {
+    fn new(enabled: bool) -> Self {
+        let spinner = if enabled {
+            let sp = ProgressBar::new_spinner();
+            sp.set_style(
+                ProgressStyle::default_spinner()
+                    .template("{spinner:.cyan} {msg}")
+                    .expect("valid template"),
+            );
+            sp.enable_steady_tick(Duration::from_millis(80));
+            sp.set_message("Loading repositories...");
+            Some(sp)
+        } else {
+            None
+        };
+        Self(spinner)
+    }
+
+    fn set_message(&self, msg: impl Into<std::borrow::Cow<'static, str>>) {
+        if let Some(sp) = &self.0 {
+            sp.set_message(msg);
+        }
+    }
+}
+
+impl Drop for SpinnerGuard {
+    fn drop(&mut self) {
+        if let Some(sp) = self.0.take() {
+            sp.finish_and_clear();
+        }
+    }
 }
 
 /// Execute the CLI with the given arguments
@@ -27,6 +65,10 @@ struct RepoInfo {
 /// - Configuration loading fails
 /// - Repository access fails
 /// - Output formatting fails
+///
+/// # Panics
+///
+/// Panics if the progress bar style template is invalid (should never happen).
 // Takes ownership because args.command is consumed by match
 #[allow(clippy::needless_pass_by_value)]
 pub fn execute(args: Args) -> Result<()> {
@@ -40,6 +82,9 @@ pub fn execute(args: Args) -> Result<()> {
     }
 
     // Default: analyze repositories
+    // Create spinner for TUI output (RAII ensures cleanup on error)
+    let spinner = SpinnerGuard::new(matches!(args.output, OutputFormat::Tui));
+
     // Get repositories to analyze
     let repos = get_repositories(&args)?;
 
@@ -50,8 +95,10 @@ pub fn execute(args: Args) -> Result<()> {
     // Collect commits from all repositories
     let mut all_commits: Vec<CommitInfo> = Vec::new();
     let mut repo_names: Vec<String> = Vec::new();
+    let repo_count = repos.len();
 
-    for repo_info in &repos {
+    for (i, repo_info) in repos.iter().enumerate() {
+        spinner.set_message(format!("Collecting commits ({}/{})...", i + 1, repo_count));
         let repo = Repository::open(&repo_info.path, &repo_info.name)?;
         let branch = args.branch.as_deref().or(repo_info.branch.as_deref());
         let commits = repo.commits_in_range(range.from, range.to, branch, exclude_merges)?;
@@ -67,8 +114,12 @@ pub fn execute(args: Args) -> Result<()> {
         .unwrap_or_else(|| format!("{} repos", repo_names.len()));
 
     // Collect statistics
+    spinner.set_message("Calculating statistics...");
     let extensions = args.ext.as_deref();
     let result = collect_stats(&combined_name, all_commits, range, args.period, extensions);
+
+    // Spinner is automatically cleared by Drop when going out of scope or on error
+    drop(spinner);
 
     // Format and output
     match args.output {
