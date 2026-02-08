@@ -1,9 +1,9 @@
-//! Error types for git-stats
+//! Error types for kodo
 
 use std::path::PathBuf;
 use thiserror::Error;
 
-/// Main error type for git-stats library
+/// Main error type for kodo library
 #[derive(Error, Debug)]
 pub enum Error {
     /// Configuration file not found at the specified path

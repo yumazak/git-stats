@@ -1,4 +1,4 @@
-//! Configuration module for git-stats
+//! Configuration module for kodo
 
 pub mod loader;
 pub mod schema;

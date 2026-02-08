@@ -1,4 +1,4 @@
-# git-stats
+# kodo
 
 [![CI](https://github.com/yumazak/git-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/git-stats/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -33,31 +33,31 @@ cargo install --path .
 
 ```bash
 # 設定された全リポジトリを分析（過去7日間、TUIモード）
-gstat
+kodo
 
 # 特定のリポジトリのみ分析
-gstat --repo-name myproject,another-repo --days 7
+kodo --repo-name myproject,another-repo --days 7
 
 # JSON 出力
-gstat --output json --days 30
+kodo --output json --days 30
 
 # CSV 出力
-gstat --output csv --days 7
+kodo --output csv --days 7
 
 # リポジトリパスを指定
-gstat --repo ~/projects/my-repo --days 14
+kodo --repo ~/projects/my-repo --days 14
 
 # ブランチでフィルタ
-gstat --branch main --days 7
+kodo --branch main --days 7
 
 # ファイル拡張子でフィルタ
-gstat --ext rs,ts,js --days 7
+kodo --ext rs,ts,js --days 7
 
 # 週別集計
-gstat --period weekly --days 30
+kodo --period weekly --days 30
 
 # 単一指標ビュー（デフォルトはスプリットビュー）
-gstat --single-metric
+kodo --single-metric
 ```
 
 ## TUI 操作
@@ -73,7 +73,7 @@ gstat --single-metric
 
 ## 設定
 
-`~/.config/git-stats/config.json` に設定ファイルを作成:
+`~/.config/kodo/config.json` に設定ファイルを作成:
 
 ```json
 {
@@ -100,7 +100,7 @@ gstat --single-metric
 
 | オプション | 短縮 | 説明 | デフォルト |
 |-----------|------|------|----------|
-| `--config` | `-c` | 設定ファイルのパス | `~/.config/git-stats/config.json` |
+| `--config` | `-c` | 設定ファイルのパス | `~/.config/kodo/config.json` |
 | `--repo` | `-r` | リポジトリパス | カレントディレクトリ |
 | `--days` | `-d` | 分析する日数 | 7 |
 | `--output` | `-o` | 出力形式 (tui/json/csv) | tui |
@@ -123,7 +123,7 @@ gstat --single-metric
 
 | 変数 | 説明 |
 |------|------|
-| `GIT_STATS_CONFIG` | 設定ファイルのパス |
+| `KODO_CONFIG` | 設定ファイルのパス |
 
 ## ライセンス
 

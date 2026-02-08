@@ -1,4 +1,4 @@
-//! # git-stats
+//! # kodo
 //!
 //! A CLI tool for analyzing Git commit statistics across repositories.
 //!

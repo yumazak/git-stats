@@ -36,20 +36,20 @@ pub fn load_config(path: &Path) -> Result<Config> {
 /// Get the default configuration file path
 ///
 /// Checks in order:
-/// 1. `~/.config/git-stats/config.json` (XDG style, preferred)
+/// 1. `~/.config/kodo/config.json` (XDG style, preferred)
 /// 2. Platform-specific config dir (e.g., `~/Library/Application Support` on macOS)
 #[must_use]
 pub fn default_config_path() -> Option<PathBuf> {
-    // First, try XDG-style path (~/.config/git-stats/config.json)
+    // First, try XDG-style path (~/.config/kodo/config.json)
     if let Some(home) = dirs::home_dir() {
-        let xdg_path = home.join(".config").join("git-stats").join("config.json");
+        let xdg_path = home.join(".config").join("kodo").join("config.json");
         if xdg_path.exists() {
             return Some(xdg_path);
         }
     }
 
     // Fall back to platform-specific config dir
-    dirs::config_dir().map(|p| p.join("git-stats").join("config.json"))
+    dirs::config_dir().map(|p| p.join("kodo").join("config.json"))
 }
 
 /// Expand `~` to the home directory in a path
@@ -149,7 +149,7 @@ mod tests {
         if dirs::config_dir().is_some() {
             assert!(path.is_some());
             let p = path.unwrap();
-            assert!(p.to_string_lossy().contains("git-stats"));
+            assert!(p.to_string_lossy().contains("kodo"));
             assert!(p.to_string_lossy().contains("config.json"));
         }
     }

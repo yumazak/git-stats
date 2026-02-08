@@ -1,4 +1,4 @@
-# git-stats
+# kodo
 
 [![CI](https://github.com/yumazak/git-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/git-stats/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -33,31 +33,31 @@ Download the appropriate binary for your platform from the [Releases](https://gi
 
 ```bash
 # Analyze all configured repositories (last 7 days, TUI mode)
-gstat
+kodo
 
 # Analyze specific repositories by name
-gstat --repo-name myproject,another-repo --days 7
+kodo --repo-name myproject,another-repo --days 7
 
 # JSON output
-gstat --output json --days 30
+kodo --output json --days 30
 
 # CSV output
-gstat --output csv --days 7
+kodo --output csv --days 7
 
 # Specify repository path
-gstat --repo ~/projects/my-repo --days 14
+kodo --repo ~/projects/my-repo --days 14
 
 # Filter by branch
-gstat --branch main --days 7
+kodo --branch main --days 7
 
 # Filter by file extensions
-gstat --ext rs,ts,js --days 7
+kodo --ext rs,ts,js --days 7
 
 # Weekly aggregation
-gstat --period weekly --days 30
+kodo --period weekly --days 30
 
 # Single metric view (default is split view)
-gstat --single-metric
+kodo --single-metric
 ```
 
 ## TUI Controls
@@ -73,7 +73,7 @@ gstat --single-metric
 
 ## Configuration
 
-Create a config file at `~/.config/git-stats/config.json`:
+Create a config file at `~/.config/kodo/config.json`:
 
 ```json
 {
@@ -100,7 +100,7 @@ Create a config file at `~/.config/git-stats/config.json`:
 
 | Option | Short | Description | Default |
 |--------|-------|-------------|---------|
-| `--config` | `-c` | Path to config file | `~/.config/git-stats/config.json` |
+| `--config` | `-c` | Path to config file | `~/.config/kodo/config.json` |
 | `--repo` | `-r` | Repository path | Current directory |
 | `--days` | `-d` | Number of days to analyze | 7 |
 | `--output` | `-o` | Output format (tui/json/csv) | tui |
@@ -123,7 +123,7 @@ Create a config file at `~/.config/git-stats/config.json`:
 
 | Variable | Description |
 |----------|-------------|
-| `GIT_STATS_CONFIG` | Path to config file |
+| `KODO_CONFIG` | Path to config file |
 
 ## License
 

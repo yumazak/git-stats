@@ -1,8 +1,8 @@
-# git-stats CLI - Architecture Design
+# kodo CLI - Architecture Design
 
 ## Overview
 
-git-stats is a CLI tool that analyzes Git commit history and displays statistics via TUI or exports to JSON/CSV. The architecture follows a layered design with clear separation between CLI handling, domain logic, and infrastructure concerns.
+kodo is a CLI tool that analyzes Git commit history and displays statistics via TUI or exports to JSON/CSV. The architecture follows a layered design with clear separation between CLI handling, domain logic, and infrastructure concerns.
 
 The system is designed for extensibility: new output formats, aggregation periods, and filters can be added without modifying core logic.
 
@@ -131,11 +131,11 @@ use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "git-stats")]
+#[command(name = "kodo")]
 #[command(version, about = "Analyze Git commit statistics")]
 pub struct Args {
     /// Path to config file
-    #[arg(short, long, env = "GIT_STATS_CONFIG")]
+    #[arg(short, long, env = "KODO_CONFIG")]
     pub config: Option<PathBuf>,
 
     /// Repository path (overrides config)
@@ -417,7 +417,7 @@ use std::path::Path;
 /// Load configuration from file
 pub fn load_config(path: &Path) -> Result<Config>;
 
-/// Get default config path (~/.config/git-stats/config.json)
+/// Get default config path (~/.config/kodo/config.json)
 pub fn default_config_path() -> Option<PathBuf>;
 
 /// Expand ~ in path
@@ -612,7 +612,7 @@ pub enum Metric {
 ```rust
 // src/main.rs
 fn main() {
-    if let Err(e) = git_stats::cli::execute(Args::parse()) {
+    if let Err(e) = kodo::cli::execute(Args::parse()) {
         eprintln!("error: {e}");
 
         // Print cause chain
@@ -811,7 +811,7 @@ tests/fixtures/
 | Check | Status | Notes |
 |-------|--------|-------|
 | clap derive macros | ✅ | `#[derive(Parser)]` used |
-| CLI > env > config priority | ✅ | `env = "GIT_STATS_CONFIG"` in Args |
+| CLI > env > config priority | ✅ | `env = "KODO_CONFIG"` in Args |
 | Errors to stderr | ✅ | `eprintln!` in main.rs |
 | Non-zero exit on error | ✅ | `std::process::exit(1)` |
 | Progress for long ops | ⚠️ ADD | Need `indicatif` for git analysis |

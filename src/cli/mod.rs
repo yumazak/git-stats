@@ -1,4 +1,4 @@
-//! CLI module for git-stats
+//! CLI module for kodo
 
 pub mod args;
 pub mod run;

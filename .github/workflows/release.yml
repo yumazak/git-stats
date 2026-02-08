@@ -41,13 +41,13 @@ jobs:
       - name: Package
         run: |
           cd target/${{ matrix.target }}/release
-          tar -czvf ../../../gstat-${{ matrix.target }}.tar.gz gstat
+          tar -czvf ../../../kodo-${{ matrix.target }}.tar.gz kodo
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gstat-${{ matrix.target }}
-          path: gstat-${{ matrix.target }}.tar.gz
+          name: kodo-${{ matrix.target }}
+          path: kodo-${{ matrix.target }}.tar.gz
 
   release:
     name: Create Release

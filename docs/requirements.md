@@ -1,4 +1,4 @@
-# git-stats CLI - Requirements Specification
+# kodo CLI - Requirements Specification
 
 ## Goals
 
@@ -56,7 +56,7 @@
 
 ### F1: JSON Config Loading
 
-- [ ] Load config from `~/.config/git-stats/config.json` by default
+- [ ] Load config from `~/.config/kodo/config.json` by default
 - [ ] Support `--config` flag for custom path
 - [ ] Support `$schema` field for IDE validation
 - [ ] Validate required fields: `repositories[].name`, `repositories[].path`

@@ -5,11 +5,11 @@ use std::path::PathBuf;
 
 /// Analyze Git commit statistics across repositories
 #[derive(Parser, Debug)]
-#[command(name = "gstat")]
+#[command(name = "kodo")]
 #[command(version, about, long_about = None)]
 pub struct Args {
     /// Path to config file
-    #[arg(short, long, env = "GIT_STATS_CONFIG")]
+    #[arg(short, long, env = "KODO_CONFIG")]
     pub config: Option<PathBuf>,
 
     /// Repository path (overrides config)
@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_args_defaults() {
-        let args = Args::parse_from(["gstat"]);
+        let args = Args::parse_from(["kodo"]);
         assert_eq!(args.days, 7);
         assert!(!args.include_merges);
         assert_eq!(args.output, OutputFormat::Tui);
@@ -126,19 +126,19 @@ mod tests {
 
     #[test]
     fn test_args_with_repo() {
-        let args = Args::parse_from(["gstat", "--repo", "/tmp/repo"]);
+        let args = Args::parse_from(["kodo", "--repo", "/tmp/repo"]);
         assert_eq!(args.repo, Some(PathBuf::from("/tmp/repo")));
     }
 
     #[test]
     fn test_args_with_days() {
-        let args = Args::parse_from(["gstat", "--days", "30"]);
+        let args = Args::parse_from(["kodo", "--days", "30"]);
         assert_eq!(args.days, 30);
     }
 
     #[test]
     fn test_args_with_extensions() {
-        let args = Args::parse_from(["gstat", "--ext", "rs,ts,js"]);
+        let args = Args::parse_from(["kodo", "--ext", "rs,ts,js"]);
         assert_eq!(
             args.ext,
             Some(vec!["rs".to_string(), "ts".to_string(), "js".to_string()])

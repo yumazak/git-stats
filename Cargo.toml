@@ -1,6 +1,6 @@
 [package]
-name = "gstat"
-version = "0.1.1"
+name = "kodo"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.93"
 authors = ["yumazak"]
@@ -13,11 +13,11 @@ categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 
 [lib]
-name = "git_stats"
+name = "kodo"
 path = "src/lib.rs"
 
 [[bin]]
-name = "gstat"
+name = "kodo"
 path = "src/main.rs"
 
 [dependencies]
