@@ -201,6 +201,7 @@ gh release view v${NEW_VERSION}
 
 ## 関連ドキュメント
 
+- [docs/versioning.md](../../../docs/versioning.md) - バージョン管理運用ガイド
 - [RELEASING.md](../../../RELEASING.md)
 - [CHANGELOG.md](../../../CHANGELOG.md)
 - [.github/workflows/release.yml](../../../.github/workflows/release.yml)
