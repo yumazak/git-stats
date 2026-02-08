@@ -3,6 +3,22 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Bar, BarChart, BarGroup, Block, Borders};
 
+/// Bar width in characters
+pub const BAR_WIDTH: u16 = 3;
+/// Gap between bars in characters
+pub const BAR_GAP: u16 = 1;
+/// Border width (left + right)
+const BORDER_WIDTH: u16 = 2;
+
+/// Calculate the minimum width needed to display a vertical bar chart
+#[must_use]
+pub const fn chart_width(bar_count: u16) -> u16 {
+    if bar_count == 0 {
+        return BORDER_WIDTH;
+    }
+    (BAR_WIDTH + BAR_GAP) * bar_count - BAR_GAP + BORDER_WIDTH
+}
+
 /// Render a vertical bar chart
 pub fn render_vertical_bar_chart(
     frame: &mut Frame,
@@ -37,8 +53,8 @@ pub fn render_vertical_bar_chart(
                 .border_style(Style::default().fg(Color::White)),
         )
         .data(BarGroup::default().bars(&bars))
-        .bar_width(3)
-        .bar_gap(1)
+        .bar_width(BAR_WIDTH)
+        .bar_gap(BAR_GAP)
         .max(u64::from(max_value));
 
     frame.render_widget(chart, area);

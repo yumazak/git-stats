@@ -3,8 +3,10 @@
 use crate::stats::ActivityStats;
 use crate::tui::app::{App, ChartType, Metric};
 use crate::tui::widgets::{
-    render_diverging_bar_chart, render_line_chart_for_metric, render_vertical_bar_chart,
+    chart_width, render_diverging_bar_chart, render_line_chart_for_metric,
+    render_vertical_bar_chart,
 };
+use ratatui::layout::Flex;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
@@ -60,8 +62,22 @@ fn render_single_chart(frame: &mut Frame, area: Rect, app: &App) {
             render_line_chart_for_metric(frame, area, app, Metric::FilesChanged);
         }
         ChartType::AddDel => render_diverging_bar_chart(frame, area, app),
-        ChartType::Weekday => render_weekday_chart(frame, area, &app.activity_stats),
-        ChartType::Hour => render_hourly_chart(frame, area, &app.activity_stats),
+        ChartType::Weekday => {
+            let centered = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Max(chart_width(7))])
+                .flex(Flex::Center)
+                .split(area)[0];
+            render_weekday_chart(frame, centered, &app.activity_stats);
+        }
+        ChartType::Hour => {
+            let centered = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Max(chart_width(24))])
+                .flex(Flex::Center)
+                .split(area)[0];
+            render_hourly_chart(frame, centered, &app.activity_stats);
+        }
     }
 }
 
