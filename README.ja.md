@@ -1,0 +1,130 @@
+# git-stats
+
+[![CI](https://github.com/yumazak/git-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/yumazak/git-stats/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Git コミット統計を分析し、TUI で可視化する CLI ツール。
+
+[English](README.md)
+
+## 特徴
+
+- 日付範囲でフィルタリングしたコミット履歴の分析
+- バーチャート・ラインチャート対応のインタラクティブ TUI
+- 全指標を同時に表示するスプリットビュー
+- JSON/CSV 形式でのデータエクスポート
+- ブランチ・ファイル拡張子でのフィルタリング
+- 日別/週別/月別/年別の集計
+- 複数リポジトリの設定サポート
+
+## インストール
+
+### ソースから
+
+```bash
+cargo install --path .
+```
+
+### リリースから
+
+[Releases](https://github.com/yumazak/git-stats/releases) ページから、お使いのプラットフォームに対応したバイナリをダウンロードしてください。
+
+## 使い方
+
+```bash
+# 設定された全リポジトリを分析（過去7日間、TUIモード）
+git-stats --output tui
+
+# 特定のリポジトリのみ分析
+git-stats --repo-name myproject,another-repo --days 7
+
+# JSON 出力
+git-stats --output json --days 30
+
+# CSV 出力
+git-stats --output csv --days 7
+
+# リポジトリパスを指定
+git-stats --repo ~/projects/my-repo --days 14
+
+# ブランチでフィルタ
+git-stats --branch main --days 7
+
+# ファイル拡張子でフィルタ
+git-stats --ext rs,ts,js --days 7
+
+# 週別集計
+git-stats --period weekly --days 30
+
+# 単一指標ビュー（デフォルトはスプリットビュー）
+git-stats --output tui --single-metric
+```
+
+## TUI 操作
+
+| キー | アクション |
+|------|----------|
+| `q` / `Esc` | 終了 |
+| `m` | ビューモード切替（Split/Single） |
+| `Tab` / `→` / `l` | 次の指標（シングルビュー時） |
+| `Shift+Tab` / `←` / `h` | 前の指標（シングルビュー時） |
+| `↑` / `k` | 上スクロール |
+| `↓` / `j` | 下スクロール |
+
+## 設定
+
+`~/.config/git-stats/config.json` に設定ファイルを作成:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/yumazak/git-stats/main/schemas/config.schema.json",
+  "repositories": [
+    {
+      "name": "my-project",
+      "path": "~/projects/my-project",
+      "branch": "main"
+    },
+    {
+      "name": "another-repo",
+      "path": "~/work/another-repo"
+    }
+  ],
+  "defaults": {
+    "days": 7,
+    "exclude_merges": true
+  }
+}
+```
+
+## CLI オプション
+
+| オプション | 短縮 | 説明 | デフォルト |
+|-----------|------|------|----------|
+| `--config` | `-c` | 設定ファイルのパス | `~/.config/git-stats/config.json` |
+| `--repo` | `-r` | リポジトリパス | カレントディレクトリ |
+| `--days` | `-d` | 分析する日数 | 7 |
+| `--output` | `-o` | 出力形式 (tui/json/csv) | json |
+| `--period` | `-p` | 集計期間 (daily/weekly/monthly/yearly) | daily |
+| `--branch` | `-b` | 分析するブランチ | デフォルトブランチ |
+| `--ext` | | 含めるファイル拡張子（カンマ区切り） | 全ファイル |
+| `--include-merges` | | マージコミットを含める | false |
+| `--single-metric` | | TUIで単一指標表示 | false (スプリットビュー) |
+| `--repo-name` | | リポジトリ名でフィルタ（カンマ区切り） | 全リポジトリ |
+
+## 指標
+
+- **Commits**: コミット数
+- **Additions**: 追加行数
+- **Deletions**: 削除行数
+- **Net Lines**: 追加 - 削除（マイナスになる場合あり）
+- **Files Changed**: 変更ファイル数
+
+## 環境変数
+
+| 変数 | 説明 |
+|------|------|
+| `GIT_STATS_CONFIG` | 設定ファイルのパス |
+
+## ライセンス
+
+MIT License - 詳細は [LICENSE](LICENSE) を参照してください。
