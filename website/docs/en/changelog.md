@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-02-11
+
+### Changed
+
+- Show loading spinner for all output modes (table/json/csv/tui)
+- Spinner outputs to stderr, keeping stdout clean for machine-readable output
+
 ## [0.6.0] - 2026-02-11
 
 ### Added
@@ -95,7 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default output format to TUI mode
 - Removed x86_64-apple-darwin target from release workflow
 
-[Unreleased]: https://github.com/yumazak/kodo/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/yumazak/kodo/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/yumazak/kodo/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/yumazak/kodo/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/yumazak/kodo/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/yumazak/kodo/compare/v0.3.0...v0.4.0
