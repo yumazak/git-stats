@@ -83,8 +83,8 @@ pub fn execute(args: Args) -> Result<()> {
     }
 
     // Default: analyze repositories
-    // Create spinner for TUI output (RAII ensures cleanup on error)
-    let spinner = SpinnerGuard::new(matches!(args.output, OutputFormat::Tui));
+    // Create spinner for all output modes (RAII ensures cleanup on error)
+    let spinner = SpinnerGuard::new(true);
 
     // Get repositories to analyze
     let repos = get_repositories(&args)?;
@@ -556,6 +556,50 @@ mod tests {
             days: 7,
             include_merges: false,
             output: OutputFormat::Json,
+            period: crate::cli::args::Period::Daily,
+            branch: None,
+            ext: None,
+            single_metric: false,
+            repo_name: None,
+        };
+
+        let result = execute(args);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_execute_with_repo_arg_table_output() {
+        let dir = create_test_repo();
+
+        let args = Args {
+            command: None,
+            config: None,
+            repo: Some(dir.path().to_path_buf()),
+            days: 7,
+            include_merges: false,
+            output: OutputFormat::Table,
+            period: crate::cli::args::Period::Daily,
+            branch: None,
+            ext: None,
+            single_metric: false,
+            repo_name: None,
+        };
+
+        let result = execute(args);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_execute_with_repo_arg_csv_output() {
+        let dir = create_test_repo();
+
+        let args = Args {
+            command: None,
+            config: None,
+            repo: Some(dir.path().to_path_buf()),
+            days: 7,
+            include_merges: false,
+            output: OutputFormat::Csv,
             period: crate::cli::args::Period::Daily,
             branch: None,
             ext: None,
