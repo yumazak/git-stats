@@ -5,9 +5,12 @@
 use crate::error::Result;
 use crate::stats::{ActivityStats, AnalysisResult};
 use crate::tui::event::{Event, EventHandler};
+use crate::tui::mvu::action::Action;
+use crate::tui::mvu::model::Model;
+use crate::tui::mvu::update::update;
 use crate::tui::ui;
 use crossterm::ExecutableCommand;
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::KeyEvent;
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::prelude::*;
 use std::io::stdout;
@@ -179,7 +182,8 @@ impl App {
             // Handle events
             match event_handler.next()? {
                 Event::Key(key) => self.handle_key(key),
-                Event::Tick | Event::Resize(_, _) => {}
+                Event::Tick => self.apply_action(Action::Tick),
+                Event::Resize(_, _) => {}
             }
         }
 
@@ -187,73 +191,49 @@ impl App {
     }
 
     fn handle_key(&mut self, key: KeyEvent) {
-        match key.code {
-            // Quit
-            KeyCode::Char('q') | KeyCode::Esc => {
-                self.should_quit = true;
-            }
-            // Quit with Ctrl+C
-            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.should_quit = true;
-            }
-            // Next chart (only in single metric mode)
-            KeyCode::Tab | KeyCode::Right | KeyCode::Char('l') => {
-                if self.single_metric {
-                    self.chart_type = self.chart_type.next();
-                }
-            }
-            // Previous chart (only in single metric mode)
-            KeyCode::BackTab | KeyCode::Left | KeyCode::Char('h') => {
-                if self.single_metric {
-                    self.chart_type = self.chart_type.prev();
-                }
-            }
-            // Scroll up (past data)
-            KeyCode::Up | KeyCode::Char('k') => {
-                if self.can_scroll() {
-                    self.scroll_up();
-                }
-            }
-            // Scroll down (towards latest)
-            KeyCode::Down | KeyCode::Char('j') => {
-                if self.can_scroll() {
-                    self.scroll_down();
-                }
-            }
-            // Toggle single/split metric view
-            KeyCode::Char('m') => {
-                self.single_metric = !self.single_metric;
-                // Reset scroll offset when toggling views
-                self.scroll_offset = 0;
-            }
-            _ => {}
+        let action = Action::from_key(key);
+        self.apply_action(action);
+    }
+
+    fn apply_action(&mut self, action: Action) {
+        let model = self.to_model();
+        let next = update(model, action);
+        self.apply_model(next);
+    }
+
+    fn to_model(&self) -> Model {
+        Model {
+            chart_type: self.chart_type,
+            should_quit: self.should_quit,
+            single_metric: self.single_metric,
+            scroll_offset: self.scroll_offset,
+            data_len: self.result.stats.len(),
         }
+    }
+
+    fn apply_model(&mut self, model: Model) {
+        self.chart_type = model.chart_type;
+        self.should_quit = model.should_quit;
+        self.single_metric = model.single_metric;
+        self.scroll_offset = model.scroll_offset;
     }
 
     /// Check if current view supports scrolling
+    #[cfg(test)]
     fn can_scroll(&self) -> bool {
-        if self.single_metric {
-            // Only AddDel chart supports scrolling in single mode
-            matches!(self.chart_type, ChartType::AddDel)
-        } else {
-            // Split view supports scrolling
-            true
-        }
+        self.to_model().can_scroll()
     }
 
     /// Scroll up to see older data
+    #[cfg(test)]
     fn scroll_up(&mut self) {
-        let data_len = self.result.stats.len();
-        if data_len > 0 {
-            // Max offset: allows scrolling until the oldest item is visible
-            let max_offset = data_len.saturating_sub(1);
-            self.scroll_offset = (self.scroll_offset + 1).min(max_offset);
-        }
+        self.apply_action(Action::ScrollUp);
     }
 
     /// Scroll down to see newer data
+    #[cfg(test)]
     fn scroll_down(&mut self) {
-        self.scroll_offset = self.scroll_offset.saturating_sub(1);
+        self.apply_action(Action::ScrollDown);
     }
 
     /// Get values for a specific metric
