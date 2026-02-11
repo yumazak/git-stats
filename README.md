@@ -47,6 +47,9 @@ cargo install --path .
 # Analyze all configured repositories (last 7 days, TUI mode)
 kodo
 
+# TUI output with short option
+kodo -o tui
+
 # Analyze specific repositories by name
 kodo --repo-name myproject,another-repo --days 7
 

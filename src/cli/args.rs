@@ -146,6 +146,7 @@ impl std::fmt::Display for Period {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use clap::CommandFactory;
 
     #[test]
     fn test_output_format_display() {
@@ -188,6 +189,12 @@ mod tests {
     #[test]
     fn test_args_output_tui_explicit() {
         let args = Args::parse_from(["kodo", "--output", "tui"]);
+        assert_eq!(args.output, OutputFormat::Tui);
+    }
+
+    #[test]
+    fn test_args_output_tui_short() {
+        let args = Args::parse_from(["kodo", "-o", "tui"]);
         assert_eq!(args.output, OutputFormat::Tui);
     }
 
@@ -257,5 +264,11 @@ mod tests {
         if let Some(Command::List(list_args)) = args.command {
             assert!(list_args.json);
         }
+    }
+
+    #[test]
+    fn test_help_includes_output_short() {
+        let help = Args::command().render_help().to_string();
+        assert!(help.contains("-o, --output <OUTPUT>"));
     }
 }

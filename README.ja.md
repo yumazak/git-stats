@@ -47,6 +47,9 @@ cargo install --path .
 # 設定された全リポジトリを分析（過去7日間、TUIモード）
 kodo
 
+# 短縮オプションで TUI 出力
+kodo -o tui
+
 # 特定のリポジトリのみ分析
 kodo --repo-name myproject,another-repo --days 7
 
