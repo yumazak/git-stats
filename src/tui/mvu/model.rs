@@ -1,4 +1,4 @@
-use crate::tui::app::ChartType;
+use crate::tui::chart_type::ChartType;
 
 /// UI state for MVU update function.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

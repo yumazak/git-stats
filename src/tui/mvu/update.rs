@@ -42,7 +42,7 @@ pub fn update(mut model: Model, action: Action) -> Model {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tui::app::ChartType;
+    use crate::tui::chart_type::ChartType;
 
     fn model() -> Model {
         Model {

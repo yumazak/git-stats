@@ -74,7 +74,7 @@ pub fn render_diverging_bar_chart(frame: &mut Frame, area: Rect, app: &App) {
     // offset=0 means show latest data (end of array)
     // offset>0 means scroll up to see older data
     let total = data.len();
-    let scroll_offset = app.scroll_offset.min(total.saturating_sub(1));
+    let scroll_offset = app.scroll_offset().min(total.saturating_sub(1));
     let end = total.saturating_sub(scroll_offset);
     let start = end.saturating_sub(available_rows);
     let display_data: Vec<_> = data[start..end].iter().collect();

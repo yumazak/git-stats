@@ -1,7 +1,8 @@
 //! UI rendering
 
 use crate::stats::ActivityStats;
-use crate::tui::app::{App, ChartType, Metric};
+use crate::tui::app::{App, Metric};
+use crate::tui::chart_type::ChartType;
 use crate::tui::widgets::{
     chart_width, render_diverging_bar_chart, render_line_chart_for_metric,
     render_vertical_bar_chart,
@@ -26,7 +27,7 @@ pub fn render(frame: &mut Frame, app: &App) {
 
     render_header(frame, chunks[0], app);
 
-    if app.single_metric {
+    if app.single_metric() {
         render_single_chart(frame, chunks[1], app);
     } else {
         render_split_charts(frame, chunks[1], app);
@@ -56,7 +57,7 @@ fn render_header(frame: &mut Frame, area: Rect, app: &App) {
 }
 
 fn render_single_chart(frame: &mut Frame, area: Rect, app: &App) {
-    match app.chart_type {
+    match app.chart_type() {
         ChartType::Commits => render_line_chart_for_metric(frame, area, app, Metric::Commits),
         ChartType::FilesChanged => {
             render_line_chart_for_metric(frame, area, app, Metric::FilesChanged);
@@ -158,13 +159,13 @@ fn hour_label(hour: usize) -> &'static str {
 }
 
 fn render_footer(frame: &mut Frame, area: Rect, app: &App) {
-    let mode_indicator = if app.single_metric {
-        format!("Single: {}", app.chart_type.name())
+    let mode_indicator = if app.single_metric() {
+        format!("Single: {}", app.chart_type().name())
     } else {
         "Split".to_string()
     };
 
-    let nav_hint = if app.single_metric {
+    let nav_hint = if app.single_metric() {
         "[Tab] Switch | "
     } else {
         ""
