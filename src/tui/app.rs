@@ -220,6 +220,11 @@ impl App {
         self.model.single_metric
     }
 
+    /// Move to the next chart in single mode.
+    pub fn next_chart(&mut self) {
+        self.apply_action(Action::NextChart);
+    }
+
     #[must_use]
     pub fn scroll_offset(&self) -> usize {
         self.model.scroll_offset
